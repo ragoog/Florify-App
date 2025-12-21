@@ -14,7 +14,7 @@ public class Post implements Serializable {
 
     @Override
     public String toString() {
-        return "Author: " + username + " : " + content;
+        return username + " : " + content;
     }
 }
 

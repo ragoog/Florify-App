@@ -20,6 +20,7 @@ public class ClientHandler extends Thread {
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
             System.out.println("ClientHandler started for: " + clientSocket.getInetAddress());
+            SendFeed(out);
 
                 while (true) {
                     Post receivedPost = (Post) in.readObject();
@@ -27,9 +28,8 @@ public class ClientHandler extends Thread {
 
                     PlantFeedServer.posts.add(receivedPost);
 
-                    out.reset(); // important!
-                    out.writeObject(PlantFeedServer.posts);
-                    out.flush();
+                    out.reset(); // important
+                    SendFeed(out);
                     System.out.println("Feed sent back to client");
                 }
 
@@ -41,6 +41,14 @@ public class ClientHandler extends Thread {
         } finally {
             try { clientSocket.close(); } catch (Exception e) {}
         }
+    }
+
+    private void SendFeed(ObjectOutputStream out) {
+        try {
+            out.writeObject(PlantFeedServer.posts);
+            out.flush();
+        }
+         catch (Exception e) {}
     }
 }
 
