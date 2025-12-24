@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PlantFeedBackend:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PlantFeedBackend_jar</output-path>
+    <root id="archive" name="PlantFeedBackend.jar">
+      <element id="module-output" name="PlantFeedBackend" />
+    </root>
+  </artifact>
+</component>

@@ -21,7 +21,7 @@
       </Label>
       <ScrollPane prefHeight="515.0" prefWidth="550.0">
          <content>
-            <VBox fx:id="PostsContainer" prefHeight="471.0" prefWidth="511.0" />
+            <VBox fx:id="postsContainer" prefHeight="471.0" prefWidth="511.0" />
          </content>
       </ScrollPane>
       <HBox alignment="TOP_CENTER" prefHeight="98.0" prefWidth="550.0">
