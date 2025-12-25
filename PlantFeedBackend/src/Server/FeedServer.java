@@ -12,6 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class FeedServer {
 
     public static final int PORT = 6000;
+    // i added nth
 
     // Store all client output streams to be able to broadcast it
     private static final List<ObjectOutputStream> clients = new CopyOnWriteArrayList<>();
