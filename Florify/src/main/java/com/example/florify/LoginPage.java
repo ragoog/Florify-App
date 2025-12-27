@@ -8,6 +8,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -93,6 +95,7 @@ public class LoginPage extends Application
         //endregion
 
 
+
         contentPane.getChildren().addAll(title, subtitle, username, password, loginButton);
 
         VBox.setMargin(title, new Insets(30,20,10,10));
@@ -156,35 +159,45 @@ public class LoginPage extends Application
         Button loginButton = new Button("LOGIN");
         loginButton.setPrefWidth(200);
         loginButton.setPrefHeight(40);
+
+        // Normal gradient + no glow
         loginButton.setStyle(
-                "-fx-background-color: #5A7C5F; " +
+                "-fx-background-color: linear-gradient(to right, #5A7C5F, #6B8E4E);" +
                         "-fx-text-fill: white; " +
                         "-fx-font-size: 20px; " +
                         "-fx-font-weight: bold; " +
                         "-fx-background-radius: 50;" +
-                        "-fx-font-family: Verdant;" +
-                        "-fx-opacity: 1.0;"
+                        "-fx-font-family: Verdant;"
         );
 
-        loginButton.setOnMouseEntered(e -> loginButton.setStyle(
-                "-fx-background-color: #8BA889; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-font-size: 20px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-background-radius: 50;" +
-                        "-fx-font-family: Verdant;" +
-                        "-fx-opacity: 1.0;"
-        ));
+        // Hover effect: gradient + subtle glow
+        loginButton.setOnMouseEntered(e -> {
+            loginButton.setStyle(
+                    "-fx-background-color: linear-gradient(to right, #8BA889, #A4C48B);" +
+                            "-fx-text-fill: white; " +
+                            "-fx-font-size: 20px; " +
+                            "-fx-font-weight: bold; " +
+                            "-fx-background-radius: 50;" +
+                            "-fx-font-family: Verdant;"
+            );
+            loginButton.setEffect(addGlowEffect()); // add glow
+        });
 
-        loginButton.setOnMouseExited(e -> loginButton.setStyle(
-                "-fx-background-color: #5A7C5F; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-font-size: 20px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-background-radius: 50;" +
-                        "-fx-font-family: Verdant;" +
-                        "-fx-opacity: 1.0;"
-        ));
+        loginButton.setOnMouseExited(e -> {
+            loginButton.setStyle(
+                    "-fx-background-color: linear-gradient(to right, #5A7C5F, #6B8E4E);" +
+                            "-fx-text-fill: white; " +
+                            "-fx-font-size: 20px; " +
+                            "-fx-font-weight: bold; " +
+                            "-fx-background-radius: 50;" +
+                            "-fx-font-family: Verdant;"
+            );
+            loginButton.setEffect(null); // remove glow
+        });
+
+        // Optional: click effect (press)
+        loginButton.setOnMousePressed(e -> loginButton.setEffect(addGlowEffect()));
+        loginButton.setOnMouseReleased(e -> loginButton.setEffect(null));
         return loginButton;
     }
     private Button createStyledRegisterButton() {
@@ -287,5 +300,15 @@ public class LoginPage extends Application
             slideButton.setToX(0);
             slideButton.play();
         }
+    }
+
+    private DropShadow addGlowEffect()
+    {
+        DropShadow glow = new DropShadow();
+        glow.setColor(Color.web("#6B8E4E"));
+        glow.setRadius(10);
+        glow.setSpread(0.2);
+
+        return glow;
     }
 }
