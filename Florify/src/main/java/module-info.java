@@ -11,6 +11,7 @@ module com.example.florify {
 //    requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
     requires jdk.xml.dom;
+    requires javafx.graphics;
 
     exports com.example.florify;
     opens com.example.florify to javafx.fxml;
