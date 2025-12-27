@@ -1,16 +1,21 @@
 package com.example.florify;
 
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.RotateTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.collections.ObservableList;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -20,6 +25,7 @@ import javafx.util.Duration;
 import org.w3c.dom.html.HTMLButtonElement;
 
 import java.util.Objects;
+import java.util.Random;
 
 public class LoginPage extends Application
 {
@@ -108,6 +114,9 @@ public class LoginPage extends Application
 
         topBar.getChildren().addAll(contentPane, registerLoginButton);
         primary.setLeft(topBar);
+
+        // needs to be fixed or removed
+        // playLeafAnimation(primary);
 
         Scene scene = new Scene(primary);  // set main primary pane
         primaryStage.setScene(scene);
@@ -311,4 +320,43 @@ public class LoginPage extends Application
 
         return glow;
     }
+
+    private void playLeafAnimation(BorderPane root) {
+        Image leaf = new Image(getClass().getResource("/com/example/florify/9c4e4505-0b82-4eb5-ab24-fe81d8833b01.png").toExternalForm());
+        Random random = new Random();
+
+        for (int i = 0; i < 10; i++) {
+            ImageView leafView = new ImageView(leaf);
+
+            // Random horizontal start
+            double startX = random.nextDouble() * 1080;
+            leafView.setTranslateX(startX);
+
+            // Randomize scale and opacity for natural look
+            double scale = 0.05 + random.nextDouble() * 0.05;
+            leafView.setScaleX(scale);
+            leafView.setScaleY(scale);
+            leafView.setOpacity(0.2 + random.nextDouble() * 0.3);
+
+            root.getChildren().add(leafView);
+
+            // Falling animation
+            TranslateTransition leafTransition = new TranslateTransition(Duration.seconds(10 + random.nextDouble() * 5), leafView);
+            leafTransition.setFromY(-50 - random.nextDouble() * 300); // start above screen
+            leafTransition.setToY(720 + 50); // fall past bottom
+            leafTransition.setCycleCount(TranslateTransition.INDEFINITE);
+            leafTransition.setInterpolator(Interpolator.LINEAR);
+
+            // Random rotation
+            RotateTransition rotate = new RotateTransition(Duration.seconds(3 + random.nextDouble() * 3), leafView);
+            rotate.setByAngle(360);
+            rotate.setCycleCount(Animation.INDEFINITE);
+            rotate.setInterpolator(Interpolator.LINEAR);
+
+            leafTransition.play();
+            rotate.play();
+        }
+    }
+
+
 }
