@@ -210,7 +210,7 @@ public class LoginPage extends Application
         return loginButton;
     }
     private Button createStyledRegisterButton() {
-        Button signUpButton = new Button("REGISTER");
+        Button signUpButton = new Button("register");
         signUpButton.setPrefWidth(150);
         signUpButton.setPrefHeight(40);
         signUpButton.setStyle(
@@ -270,10 +270,10 @@ public class LoginPage extends Application
         TranslateTransition slideButton = new TranslateTransition(Duration.millis(800), registerLoginButton);
 
 
-        if(registerLoginButton.getText().equals("REGISTER"))
+        if(registerLoginButton.getText().equals("register"))
         {
             // change texts to the login texts
-            registerLoginButton.setText("LOGIN");
+            registerLoginButton.setText("login");
             title.setText("Sign up");
             subtitle.setText("Enter a valid email and password");
             username.setPromptText("Email");
@@ -289,10 +289,10 @@ public class LoginPage extends Application
             slideButton.setToX(-110); // Move to the left (opposite direction)
             slideButton.play();
         }
-        else if(registerLoginButton.getText().equals("LOGIN"))
+        else if(registerLoginButton.getText().equals("login"))
         {
             // change texts to the register texts
-            registerLoginButton.setText("REGISTER");
+            registerLoginButton.setText("register");
             title.setText("Login");
             subtitle.setText("Login with a valid username and password");
             username.setPromptText("Username");
