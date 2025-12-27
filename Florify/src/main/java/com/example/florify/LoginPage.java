@@ -242,6 +242,8 @@ public class LoginPage extends Application
     {
         TranslateTransition slidePane = new TranslateTransition(Duration.millis(milliseconds), pane);
         TranslateTransition slideButton = new TranslateTransition(Duration.millis(800), registerLoginButton);
+        TextField confirmPassword = createStyledTextField();
+        confirmPassword.setPromptText("Confirm Password");
 
         if(registerLoginButton.getText().equals("REGISTER"))
         {
@@ -251,6 +253,10 @@ public class LoginPage extends Application
             subtitle.setText("Enter a valid email and password");
             username.setPromptText("Email");
             loginButton.setText("SIGN UP");
+
+            // add the confirm password
+            pane.getChildren().add(4, confirmPassword);
+            VBox.setMargin(confirmPassword, new Insets(5, 20, 10, 10));
 
             // Animate pane sliding to the left
             slidePane.setToX(560);
@@ -268,6 +274,9 @@ public class LoginPage extends Application
             subtitle.setText("Login with a valid username and password");
             username.setPromptText("Username");
             loginButton.setText("LOGIN");
+
+            // remove the confirm password button
+            pane.getChildren().remove(4);
 
             // animate pane sliding to the right
             slidePane.setToX(0);
