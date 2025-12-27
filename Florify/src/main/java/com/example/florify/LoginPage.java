@@ -59,12 +59,15 @@ public class LoginPage extends Application
         TextField password = createStyledTextField();
         password.setPromptText("Password");
 
+        TextField confirmPassword = createStyledTextField();
+        confirmPassword.setPromptText("Confirm Password");
+
         // Login button
         Button loginButton = createStyledButton();
 
         Button registerLoginButton = createStyledRegisterButton();
         registerLoginButton.setOnAction(e -> {slideAnimation(700, contentPane, registerLoginButton,
-                title, subtitle, username, loginButton);});
+                title, subtitle, username, confirmPassword, loginButton);});
 
 
 
@@ -96,6 +99,7 @@ public class LoginPage extends Application
         VBox.setMargin(subtitle, new Insets(10,20,10,10));
         VBox.setMargin(username, new Insets(5,20,10,10));
         VBox.setMargin(password, new Insets(5,20,10,10));
+        VBox.setMargin(confirmPassword, new Insets(5,20,10,10));
         VBox.setMargin(loginButton, new Insets(5,20,10,20));
         contentPane.setAlignment(Pos.BASELINE_LEFT);
 
@@ -238,12 +242,11 @@ public class LoginPage extends Application
         return  signUpButton;
     }
     private void slideAnimation(int milliseconds, Pane pane, Button registerLoginButton,
-                                Label title, Label subtitle, TextField username, Button loginButton)
+                                Label title, Label subtitle, TextField username, TextField confirmPassword, Button loginButton)
     {
         TranslateTransition slidePane = new TranslateTransition(Duration.millis(milliseconds), pane);
         TranslateTransition slideButton = new TranslateTransition(Duration.millis(800), registerLoginButton);
-        TextField confirmPassword = createStyledTextField();
-        confirmPassword.setPromptText("Confirm Password");
+
 
         if(registerLoginButton.getText().equals("REGISTER"))
         {
@@ -254,9 +257,7 @@ public class LoginPage extends Application
             username.setPromptText("Email");
             loginButton.setText("SIGN UP");
 
-            // add the confirm password
             pane.getChildren().add(4, confirmPassword);
-            VBox.setMargin(confirmPassword, new Insets(5, 20, 10, 10));
 
             // Animate pane sliding to the left
             slidePane.setToX(560);
