@@ -1,85 +1,100 @@
-package com.example.florify;
+package com.example.florify.ui.login;
 
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.RotateTransition;
 import javafx.animation.TranslateTransition;
-import javafx.application.Application;
-import javafx.collections.ObservableList;
-import javafx.fxml.JavaFXBuilderFactory;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.w3c.dom.html.HTMLButtonElement;
 
 import java.util.Objects;
 import java.util.Random;
 
-public class LoginPage extends Application
+public class LoginView
 {
+    private BorderPane primary;
+    private Scene scene;
 
-    public static void main(String[] args) {
-        launch(args);
+    private TextField username;
+    private TextField password;
+    private TextField confirmPassword;
+    private Button loginButton;
+    private Button registerLoginButton;
+    private Label title;
+    private Label subtitle;
+    private VBox contentPane;
+
+    // create an enum for the RegisterLoginButton state
+    enum ButtonState { LOGIN, REGISTER }
+    private ButtonState currentButtonState = ButtonState.REGISTER;
+
+
+    // constructor
+    public LoginView()
+    {
+        InitializeUI();
     }
 
-    @Override
-    public void start(Stage primaryStage)
+    // this method initializes the ui
+    private void InitializeUI()
     {
-        // main pane
-        BorderPane primary = new BorderPane();
+        // initialize primary pane
+        primary = new BorderPane();
         primary.setPrefSize(1080, 720);
 
-        // content pane
-        VBox contentPane = new VBox(10);
+        // initialize content pane
+        contentPane = new VBox(10);
         contentPane.setSpacing(50);
         contentPane.setStyle("-fx-background-color: #253528; -fx-opacity : 0.9;");
         contentPane.setPrefWidth(520);
+        contentPane.setAlignment(Pos.BASELINE_LEFT);
 
-        // top bar
-        HBox topBar = new HBox();
-
-
-        //region Content
-
-        // load font
-        Label title = new Label("Login");
+        // initialize labels
+        title = new Label("Login");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 80; -fx-font-family: Verdant; ");
 
-        Label subtitle = new Label("Login with a valid username and password");
+        subtitle = new Label("Login with a valid username and password");
         subtitle.setStyle("-fx-text-fill: white; -fx-font-size: 20; -fx-font-family: Verdant;");
 
-
-        TextField username = createStyledTextField();
+        // initialize textFields
+        username = createStyledTextField();
         username.setPromptText("Username");
 
-        TextField password = createStyledTextField();
+        password = createStyledTextField();
         password.setPromptText("Password");
 
-        TextField confirmPassword = createStyledTextField();
+        confirmPassword = createStyledTextField();
         confirmPassword.setPromptText("Confirm Password");
 
-        // Login button
-        Button loginButton = createStyledButton();
+        // initialize buttons
+        loginButton = createStyledButton();
+        registerLoginButton = createStyledRegisterButton();
 
-        Button registerLoginButton = createStyledRegisterButton();
-        registerLoginButton.setOnAction(e -> {slideAnimation(700, contentPane, registerLoginButton,
-                title, subtitle, username, confirmPassword, loginButton);});
+        // align everything and add them to the contentPane
+        contentPane.getChildren().addAll(title, subtitle, username, password, loginButton);
+        VBox.setMargin(title, new Insets(30,20,10,10));
+        VBox.setMargin(subtitle, new Insets(10,20,10,10));
+        VBox.setMargin(username, new Insets(5,20,10,10));
+        VBox.setMargin(password, new Insets(5,20,10,10));
+        VBox.setMargin(confirmPassword, new Insets(5,20,10,10));
+        VBox.setMargin(loginButton, new Insets(5,20,10,20));
+
+        // add a Hbox to align the sidepanel with button
+        HBox topBar = new HBox();
+        topBar.getChildren().addAll(contentPane, registerLoginButton);
+        primary.setLeft(topBar);
 
 
-
-
+        // change primaryPane background
         // region Background Image
 
         // image link here
@@ -100,30 +115,24 @@ public class LoginPage extends Application
         primary.setBackground(new Background(backgroundImage));
         //endregion
 
-
-
-        contentPane.getChildren().addAll(title, subtitle, username, password, loginButton);
-
-        VBox.setMargin(title, new Insets(30,20,10,10));
-        VBox.setMargin(subtitle, new Insets(10,20,10,10));
-        VBox.setMargin(username, new Insets(5,20,10,10));
-        VBox.setMargin(password, new Insets(5,20,10,10));
-        VBox.setMargin(confirmPassword, new Insets(5,20,10,10));
-        VBox.setMargin(loginButton, new Insets(5,20,10,20));
-        contentPane.setAlignment(Pos.BASELINE_LEFT);
-
-        topBar.getChildren().addAll(contentPane, registerLoginButton);
-        primary.setLeft(topBar);
-
-        // needs to be fixed or removed
-        // playLeafAnimation(primary);
-
-        Scene scene = new Scene(primary);  // set main primary pane
-        primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
-        primaryStage.show();
+        scene = new Scene(primary, 1080, 720);
     }
 
+    //region Getters
+    //  for everything to reference from LoginController and FlorifyApp
+    public Scene getScene() { return scene; }
+    public VBox getContentPane() { return contentPane; }
+    public Button getRegisterButton() { return registerLoginButton; }
+    public Button getLoginButton() { return loginButton; }
+    public TextField getUsernameField() { return username; }
+    public TextField getPasswordField() { return password; }
+    public TextField getConfirmPasswordField() { return confirmPassword; }
+    public Label getTitleLabel() { return title; }
+    public Label getSubtitleLabel() { return subtitle; }
+    public ButtonState getCurrentButtonState() { return currentButtonState; }
+    //endregion
+
+    // methods related to the style
     private TextField createStyledTextField() {
         TextField textField = new TextField();
         textField.setStyle(
@@ -165,12 +174,13 @@ public class LoginPage extends Application
         return textField;
     }
     private Button createStyledButton() {
-        Button loginButton = new Button("LOGIN");
-        loginButton.setPrefWidth(200);
-        loginButton.setPrefHeight(40);
+
+        Button btn = new Button("LOGIN");
+        btn.setPrefWidth(200);
+        btn.setPrefHeight(40);
 
         // Normal gradient + no glow
-        loginButton.setStyle(
+        btn.setStyle(
                 "-fx-background-color: linear-gradient(to right, #5A7C5F, #6B8E4E);" +
                         "-fx-text-fill: white; " +
                         "-fx-font-size: 20px; " +
@@ -180,8 +190,8 @@ public class LoginPage extends Application
         );
 
         // Hover effect: gradient + subtle glow
-        loginButton.setOnMouseEntered(e -> {
-            loginButton.setStyle(
+        btn.setOnMouseEntered(e -> {
+            btn.setStyle(
                     "-fx-background-color: linear-gradient(to right, #8BA889, #A4C48B);" +
                             "-fx-text-fill: white; " +
                             "-fx-font-size: 20px; " +
@@ -189,11 +199,12 @@ public class LoginPage extends Application
                             "-fx-background-radius: 50;" +
                             "-fx-font-family: Verdant;"
             );
-            loginButton.setEffect(addGlowEffect()); // add glow
+            btn.setEffect(addGlowEffect()); // add glow
         });
 
-        loginButton.setOnMouseExited(e -> {
-            loginButton.setStyle(
+        // return back to normal
+        btn.setOnMouseExited(e -> {
+            btn.setStyle(
                     "-fx-background-color: linear-gradient(to right, #5A7C5F, #6B8E4E);" +
                             "-fx-text-fill: white; " +
                             "-fx-font-size: 20px; " +
@@ -201,13 +212,13 @@ public class LoginPage extends Application
                             "-fx-background-radius: 50;" +
                             "-fx-font-family: Verdant;"
             );
-            loginButton.setEffect(null); // remove glow
+            btn.setEffect(null); // remove glow
         });
 
         // Optional: click effect (press)
-        loginButton.setOnMousePressed(e -> loginButton.setEffect(addGlowEffect()));
-        loginButton.setOnMouseReleased(e -> loginButton.setEffect(null));
-        return loginButton;
+        btn.setOnMousePressed(e -> btn.setEffect(addGlowEffect()));
+        btn.setOnMouseReleased(e -> btn.setEffect(null));
+        return btn;
     }
     private Button createStyledRegisterButton() {
         Button signUpButton = new Button("register");
@@ -263,56 +274,7 @@ public class LoginPage extends Application
         ));
         return  signUpButton;
     }
-    private void slideAnimation(int milliseconds, Pane pane, Button registerLoginButton,
-                                Label title, Label subtitle, TextField username, TextField confirmPassword, Button loginButton)
-    {
-        TranslateTransition slidePane = new TranslateTransition(Duration.millis(milliseconds), pane);
-        TranslateTransition slideButton = new TranslateTransition(Duration.millis(800), registerLoginButton);
-
-
-        if(registerLoginButton.getText().equals("register"))
-        {
-            // change texts to the login texts
-            registerLoginButton.setText("login");
-            title.setText("Sign up");
-            subtitle.setText("Enter a valid email and password");
-            username.setPromptText("Email");
-            loginButton.setText("SIGN UP");
-
-            pane.getChildren().add(4, confirmPassword);
-
-            // Animate pane sliding to the left
-            slidePane.setToX(560);
-            slidePane.play();
-
-            // Animate the signup button moving to the left
-            slideButton.setToX(-110); // Move to the left (opposite direction)
-            slideButton.play();
-        }
-        else if(registerLoginButton.getText().equals("login"))
-        {
-            // change texts to the register texts
-            registerLoginButton.setText("register");
-            title.setText("Login");
-            subtitle.setText("Login with a valid username and password");
-            username.setPromptText("Username");
-            loginButton.setText("LOGIN");
-
-            // remove the confirm password button
-            pane.getChildren().remove(4);
-
-            // animate pane sliding to the right
-            slidePane.setToX(0);
-            slidePane.play();
-
-            // animate button sliding to the right
-            slideButton.setToX(0);
-            slideButton.play();
-        }
-    }
-
-    private DropShadow addGlowEffect()
-    {
+    private DropShadow addGlowEffect() {
         DropShadow glow = new DropShadow();
         glow.setColor(Color.web("#6B8E4E"));
         glow.setRadius(10);
@@ -321,42 +283,98 @@ public class LoginPage extends Application
         return glow;
     }
 
-    private void playLeafAnimation(BorderPane root) {
-        Image leaf = new Image(getClass().getResource("/com/example/florify/9c4e4505-0b82-4eb5-ab24-fe81d8833b01.png").toExternalForm());
-        Random random = new Random();
+    // methods for button state
+    public void slideToLoginAnimation(int milliseconds, Pane pane, Button registerLoginButton,
+                              Label title, Label subtitle, TextField username,
+                              TextField confirmPassword, Button loginButton)
+    {
+        TranslateTransition slidePane = new TranslateTransition(Duration.millis(milliseconds), pane);
+        TranslateTransition slideButton = new TranslateTransition(Duration.millis(800), registerLoginButton);
 
-        for (int i = 0; i < 10; i++) {
-            ImageView leafView = new ImageView(leaf);
+        // change texts to the login texts
+        registerLoginButton.setText("login");
+        title.setText("Sign up");
+        subtitle.setText("Enter a valid email and password");
+        username.setPromptText("Email");
+        loginButton.setText("SIGN UP");
 
-            // Random horizontal start
-            double startX = random.nextDouble() * 1080;
-            leafView.setTranslateX(startX);
+        pane.getChildren().add(4, confirmPassword);
 
-            // Randomize scale and opacity for natural look
-            double scale = 0.05 + random.nextDouble() * 0.05;
-            leafView.setScaleX(scale);
-            leafView.setScaleY(scale);
-            leafView.setOpacity(0.2 + random.nextDouble() * 0.3);
+        // Animate pane sliding to the left
+        slidePane.setToX(560);
+        slidePane.play();
 
-            root.getChildren().add(leafView);
+        // Animate the signup button moving to the left
+        slideButton.setToX(-110); // Move to the left (opposite direction)
+        slideButton.play();
 
-            // Falling animation
-            TranslateTransition leafTransition = new TranslateTransition(Duration.seconds(10 + random.nextDouble() * 5), leafView);
-            leafTransition.setFromY(-50 - random.nextDouble() * 300); // start above screen
-            leafTransition.setToY(720 + 50); // fall past bottom
-            leafTransition.setCycleCount(TranslateTransition.INDEFINITE);
-            leafTransition.setInterpolator(Interpolator.LINEAR);
-
-            // Random rotation
-            RotateTransition rotate = new RotateTransition(Duration.seconds(3 + random.nextDouble() * 3), leafView);
-            rotate.setByAngle(360);
-            rotate.setCycleCount(Animation.INDEFINITE);
-            rotate.setInterpolator(Interpolator.LINEAR);
-
-            leafTransition.play();
-            rotate.play();
-        }
+        // change the state back to register
+        currentButtonState = ButtonState.LOGIN;
     }
+    public void slideToRegisterAnimation(int milliseconds, Pane pane, Button registerLoginButton,
+                                 Label title, Label subtitle, TextField username, Button loginButton)
+    {
+        TranslateTransition slidePane = new TranslateTransition(Duration.millis(milliseconds), pane);
+        TranslateTransition slideButton = new TranslateTransition(Duration.millis(800), registerLoginButton);
 
+        // change texts to the register texts
+        registerLoginButton.setText("register");
+        title.setText("Login");
+        subtitle.setText("Login with a valid username and password");
+        username.setPromptText("Username");
+        loginButton.setText("LOGIN");
 
+        // remove the confirm password button
+        pane.getChildren().remove(4);
+
+        // animate pane sliding to the right
+        slidePane.setToX(0);
+        slidePane.play();
+
+        // animate button sliding to the right
+        slideButton.setToX(0);
+        slideButton.play();
+
+        // change it back to log in
+        currentButtonState = ButtonState.REGISTER;
+    }
+    // playLeafAnimation(primary);
 }
+//region leaf animation
+//    private void playLeafAnimation(BorderPane root) {
+//        Image leaf = new Image(getClass().getResource("/com/example/florify/9c4e4505-0b82-4eb5-ab24-fe81d8833b01.png").toExternalForm());
+//        Random random = new Random();
+//
+//        for (int i = 0; i < 10; i++) {
+//            ImageView leafView = new ImageView(leaf);
+//
+//            // Random horizontal start
+//            double startX = random.nextDouble() * 1080;
+//            leafView.setTranslateX(startX);
+//
+//            // Randomize scale and opacity for natural look
+//            double scale = 0.05 + random.nextDouble() * 0.05;
+//            leafView.setScaleX(scale);
+//            leafView.setScaleY(scale);
+//            leafView.setOpacity(0.2 + random.nextDouble() * 0.3);
+//
+//            root.getChildren().add(leafView);
+//
+//            // Falling animation
+//            TranslateTransition leafTransition = new TranslateTransition(Duration.seconds(10 + random.nextDouble() * 5), leafView);
+//            leafTransition.setFromY(-50 - random.nextDouble() * 300); // start above screen
+//            leafTransition.setToY(720 + 50); // fall past bottom
+//            leafTransition.setCycleCount(TranslateTransition.INDEFINITE);
+//            leafTransition.setInterpolator(Interpolator.LINEAR);
+//
+//            // Random rotation
+//            RotateTransition rotate = new RotateTransition(Duration.seconds(3 + random.nextDouble() * 3), leafView);
+//            rotate.setByAngle(360);
+//            rotate.setCycleCount(Animation.INDEFINITE);
+//            rotate.setInterpolator(Interpolator.LINEAR);
+//
+//            leafTransition.play();
+//            rotate.play();
+//        }
+//    }
+//endregion

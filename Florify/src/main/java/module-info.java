@@ -12,7 +12,16 @@ module com.example.florify {
     requires com.almasb.fxgl.all;
     requires jdk.xml.dom;
     requires javafx.graphics;
+//    requires com.example.florify;
 
     exports com.example.florify;
     opens com.example.florify to javafx.fxml;
+//    exports com.example.florify.ui;
+//    opens com.example.florify.ui to javafx.fxml;
+    exports com.example.florify.ui.login;
+    opens com.example.florify.ui.login to javafx.fxml;
+    exports com.example.florify.ui.feed;
+    opens com.example.florify.ui.feed to javafx.fxml;
+    exports com.example.florify.ui.navigation;
+    opens com.example.florify.ui.navigation to javafx.fxml;
 }

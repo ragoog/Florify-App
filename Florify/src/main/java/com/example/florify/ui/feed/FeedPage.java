@@ -1,4 +1,4 @@
-package com.example.florify;
+package com.example.florify.ui.feed;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
