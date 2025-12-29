@@ -111,7 +111,7 @@ public class LoginController
         // check if the email contains any of the validDomains
         for(String domain : validDomains)
         {
-            if(email.contains(domain))
+            if(email.endsWith(domain))
             {
                 valid = true;
                 break;
