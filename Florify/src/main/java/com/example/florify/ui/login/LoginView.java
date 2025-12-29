@@ -25,8 +25,8 @@ public class LoginView
     private Scene scene;
 
     private TextField username;
-    private TextField password;
-    private TextField confirmPassword;
+    private PasswordField password;
+    private PasswordField confirmPassword;
     private Button loginButton;
     private Button registerLoginButton;
     private Label title;
@@ -69,10 +69,10 @@ public class LoginView
         username = createStyledTextField();
         username.setPromptText("Username");
 
-        password = createStyledTextField();
+        password = createStyledPasswordField();
         password.setPromptText("Password");
 
-        confirmPassword = createStyledTextField();
+        confirmPassword = createStyledPasswordField();
         confirmPassword.setPromptText("Confirm Password");
 
         // initialize buttons
@@ -125,8 +125,8 @@ public class LoginView
     public Button getRegisterButton() { return registerLoginButton; }
     public Button getLoginButton() { return loginButton; }
     public TextField getUsernameField() { return username; }
-    public TextField getPasswordField() { return password; }
-    public TextField getConfirmPasswordField() { return confirmPassword; }
+    public PasswordField getPasswordField() { return password; }
+    public PasswordField getConfirmPasswordField() { return confirmPassword; }
     public Label getTitleLabel() { return title; }
     public Label getSubtitleLabel() { return subtitle; }
     public ButtonState getCurrentButtonState() { return currentButtonState; }
@@ -172,6 +172,47 @@ public class LoginView
         });
 
         return textField;
+    }
+    // methods related to the style
+    private PasswordField createStyledPasswordField() {
+        PasswordField passwordField = new PasswordField();
+        passwordField.setStyle(
+                "-fx-background-color: transparent; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-border-color: transparent transparent #444444 transparent; " +
+                        "-fx-border-width: 0 0 1 0; " +
+                        "-fx-padding: 5 0 5 0; " +
+                        "-fx-font-size: 20px;" +
+                        "-fx-font-family: Verdant"
+        );
+        passwordField.setPrefWidth(300);
+
+        // Focus effect
+        passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                passwordField.setStyle(
+                        "-fx-background-color: transparent; " +
+                                "-fx-text-fill: white; " +
+                                "-fx-border-color: transparent transparent #6B9E5A transparent; " +
+                                "-fx-border-width: 0 0 2 0; " +
+                                "-fx-padding: 5 0 5 0; " +
+                                "-fx-font-size: 20px;" +
+                                "-fx-font-family: Verdant"
+                );
+            } else {
+                passwordField.setStyle(
+                        "-fx-background-color: transparent; " +
+                                "-fx-text-fill: white; " +
+                                "-fx-border-color: transparent transparent #444444 transparent; " +
+                                "-fx-border-width: 0 0 1 0; " +
+                                "-fx-padding: 5 0 5 0; " +
+                                "-fx-font-size: 20px;" +
+                                "-fx-font-family: Verdant"
+                );
+            }
+        });
+
+        return passwordField;
     }
     private Button createStyledButton() {
 

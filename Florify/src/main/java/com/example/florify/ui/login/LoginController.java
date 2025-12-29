@@ -4,6 +4,7 @@ import com.example.florify.db.Database;
 import com.example.florify.db.UserDAO;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.layout.VBox;
@@ -31,8 +32,8 @@ public class LoginController
         Label titleLabel = loginView.getTitleLabel();
         Label subtitleLabel = loginView.getSubtitleLabel();
         TextField usernameField = loginView.getUsernameField();
-        TextField passwordField = loginView.getPasswordField();
-        TextField confirmPasswordField = loginView.getConfirmPasswordField();
+        PasswordField passwordField = loginView.getPasswordField();
+        PasswordField confirmPasswordField = loginView.getConfirmPasswordField();
 
         // event for switching login/signup
         registerButton.setOnAction(e ->
@@ -60,7 +61,8 @@ public class LoginController
             if(loginView.getCurrentButtonState() == LoginView.ButtonState.LOGIN)
             {
                 String email = usernameField.getText().toLowerCase();
-                if(validEmail(email))
+                String confirmPassword = confirmPasswordField.getText();
+                if(validEmail(email) && matchingPassword(password, confirmPassword))
                 {
                     String username = email.substring(0, email.indexOf("@"));
                     boolean registered = UserDAO.registerUser(username, email, password);
@@ -75,6 +77,10 @@ public class LoginController
                     {
                         System.out.println("register failed");
                     }
+                }
+                else
+                {
+                    System.out.println("Password doesnt match");
                 }
             }
             else
@@ -120,5 +126,10 @@ public class LoginController
 
         System.out.println("Email is invalid please enter a valid domain ex: @outlook.com");
         return valid;
+    }
+
+    private boolean matchingPassword(String password, String confirmPassword)
+    {
+        return password.equals(confirmPassword);
     }
 }
