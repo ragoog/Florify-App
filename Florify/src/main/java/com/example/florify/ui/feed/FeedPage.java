@@ -190,15 +190,26 @@ public class FeedPage extends Application {
         h.getChildren().addAll(post, postButton);
         VBox postsContainer = new VBox(10);
         postsContainer.setPadding(new Insets(10));
+        postsContainer.setFillWidth(true);
         postsContainer.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, null, null)));
 
         ScrollPane scrollPane = new ScrollPane(postsContainer);
+        scrollPane.setFitToWidth(true);
+
         scrollPane.setPrefHeight(800);
         scrollPane.setPrefWidth(800);
         scrollPane.setStyle("-fx-background-color: #8BA889;" +
-                "-fx-opacity: 0.2;");
-               // "-fx-background-radius: 20;" +
-             //   "-fx-border-radius: 20;");
+                "-fx-opacity: 0.3;");
+
+        scrollPane.setFitToWidth(true);
+
+        postButton.setOnAction(e -> {
+            String text = post.getText().trim();
+            if (text.isEmpty()) return;
+            PostCard card = new PostCard(text);
+            postsContainer.getChildren().add(0,card);
+            post.clear();
+        });
 
         v.getChildren().addAll(scrollPane, h);
 
