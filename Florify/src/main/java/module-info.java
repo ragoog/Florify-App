@@ -14,11 +14,12 @@ module com.example.florify {
     requires javafx.graphics;
     requires java.sql;
 //    requires com.example.florify;
-
+    opens com.example.florify.ui.main to javafx.graphics;
     exports com.example.florify;
     opens com.example.florify to javafx.fxml;
 //    exports com.example.florify.ui;
 //    opens com.example.florify.ui to javafx.fxml;
+
     exports com.example.florify.ui.login;
     opens com.example.florify.ui.login to javafx.fxml;
     exports com.example.florify.ui.feed;

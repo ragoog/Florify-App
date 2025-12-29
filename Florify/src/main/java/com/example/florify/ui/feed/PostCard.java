@@ -10,6 +10,8 @@ public class PostCard extends VBox {
 
     public PostCard(String content) {
 
+        Label username = new Label("Username");
+        username.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
         setSpacing(8);
         setPadding(new Insets(12));
         setMaxWidth(Double.MAX_VALUE);
@@ -24,6 +26,6 @@ public class PostCard extends VBox {
         Label contentLabel = new Label(content);
         contentLabel.setWrapText(true);
         contentLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14;");
-        getChildren().addAll(contentLabel);
+        getChildren().addAll(username, contentLabel);
     }
 }
