@@ -12,6 +12,7 @@ module com.example.florify {
     requires com.almasb.fxgl.all;
     requires jdk.xml.dom;
     requires javafx.graphics;
+    requires java.sql;
 //    requires com.example.florify;
 
     exports com.example.florify;
