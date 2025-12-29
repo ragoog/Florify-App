@@ -21,7 +21,7 @@ public class LoginController
     private void setupActions()
     {
         // first initialize the database if it is not already initialized
-        UserDAO.dropUsersTable();
+        // UserDAO.dropUsersTable();
         Database.init();
 
         // reference the buttons here from the loginView
@@ -59,7 +59,7 @@ public class LoginController
 
             if(loginView.getCurrentButtonState() == LoginView.ButtonState.LOGIN)
             {
-                String email = usernameField.getText();
+                String email = usernameField.getText().toLowerCase();
                 if(validEmail(email))
                 {
                     String username = email.substring(0, email.indexOf("@"));
@@ -105,7 +105,7 @@ public class LoginController
         }
 
         boolean valid = false;
-        String[] validDomains = {"@gmail.com", "@yahoo.com", "@outlook.com"};
+        String[] validDomains = {"@gmail.com", "@yahoo.com", "@outlook.com", "@hotmail.com"};
 
 
         // check if the email contains any of the validDomains
