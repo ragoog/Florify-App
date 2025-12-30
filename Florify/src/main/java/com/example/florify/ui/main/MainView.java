@@ -5,8 +5,10 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
@@ -37,41 +39,56 @@ public class MainView extends Application {
 
 
     @Override
-    public void start(Stage primaryStage)
-    {
-        HBox upperBox = createStyledTopBar();
-        VBox tipPane = createStyledTipBar();
+    public void start(Stage primaryStage){
 
-        HBox cardContainer = new HBox(20);
-        cardContainer.setAlignment(Pos.CENTER_LEFT);
-        cardContainer.setPadding(new Insets(20));
+            HBox upperBox = createStyledTopBar();
+            VBox tipPane = createStyledTipBar();
 
+            HBox cardContainer = new HBox(20);
+        cardContainer.setStyle("-fx-background-color: transparent;");
 
+        cardContainer.setPadding(new Insets(20, 20, 20, 20));
+            cardContainer.setAlignment(Pos.CENTER);
+            cardContainer.getChildren().add(createPlantCard("Tomato", "/com/example/florify/tomato.png"));
+            cardContainer.getChildren().add(createPlantCard("Potato", "/com/example/florify/potato.png"));
+            cardContainer.getChildren().add(createPlantCard("Mint", "/com/example/florify/mint.png"));
+            cardContainer.getChildren().add(createPlantCard("Lettuce", "/com/example/florify/lettuce.png"));
+            cardContainer.getChildren().add(createPlantCard("Aloe", "/com/example/florify/aloe.png"));
+            cardContainer.getChildren().add(createPlantCard("Spinach", "/com/example/florify/spinach.png"));
+            cardContainer.getChildren().add(createPlantCard("Basil", "/com/example/florify/basil.png"));
 
-        for(int i = 0; i < 11; i++)
-        {
-            VBox card = createPlantCard();
-            cardContainer.getChildren().add(card);
-        }
+            ScrollPane scrollPane = new ScrollPane(cardContainer);
+        VBox.setMargin(scrollPane, new Insets(70, 0, 30, 0));
 
-        ScrollPane scrollPane = new ScrollPane(cardContainer);
+        scrollPane.setStyle("""
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+""");
+        Platform.runLater(() -> {
+            Node vp = scrollPane.lookup(".viewport");
+            if (vp != null) {
+                vp.setStyle("-fx-background-color: transparent;");
+            }
+        });
+
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setPannable(true);
-        scrollPane.setFitToHeight(true);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-padding: 10;");
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            scrollPane.setPannable(true);
+            scrollPane.setPadding(new Insets(20, 20, 5, 20));
+            scrollPane.setFitToHeight(true);
+            scrollPane.setOnScrollFinished(e -> snapToClosestCard(scrollPane, cardContainer));
 
-        scrollPane.setOnScrollFinished(e -> snapToClosestCard(scrollPane, cardContainer));
+            // Action buttons
+            HBox actionButtons = createActionButtons();
 
+            VBox primary = createStyledPrimary();
+            primary.getChildren().addAll(upperBox, tipPane,scrollPane, actionButtons);
 
-        VBox primary = createStyledPrimary();
-        primary.getChildren().addAll(upperBox, tipPane, scrollPane);
-
-        Scene scene = new Scene(primary, 1080, 720);
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-
+            Scene scene = new Scene(primary, 1080, 720);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        }
 
     private void snapToClosestCard(ScrollPane scrollPane, HBox container) {
         double scrollX = scrollPane.getHvalue() * (container.getWidth() - scrollPane.getWidth());
@@ -97,32 +114,31 @@ public class MainView extends Application {
         scrollPane.setHvalue(targetHValue);
     }
 
-    private VBox createPlantCard()
+    private VBox createPlantCard(String plantName, String imagePath)
     {
         VBox card = new VBox(10);
         card.setAlignment(Pos.CENTER);
         card.setPadding(new Insets(10));
         card.setPrefSize(60, 100);
-        card.setStyle("-fx-background-color: #f0f0f0; -fx-background-radius: 15;");
-        card.setEffect(new DropShadow(10, Color.gray(0.3)));
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
 
         // plant image
-        String imgLink = "/com/example/florify/WhatsApp Image 2025-12-29 at 6.37.34 PM (1).jpeg";
-        Image img = new Image(Objects.requireNonNull(getClass().getResource(imgLink)).toExternalForm(), 180, 180, true, true);
+        Image img = new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm(), 180, 180, true, true);
         ImageView imgView = new ImageView(img);
-//        imgView.setSmooth(true);
+        imgView.setFitWidth(180);
+        imgView.setFitHeight(180);
+        imgView.setPreserveRatio(false);
 
         // Plant name
-        Text plantName = new Text("Tomato");
-        plantName.setFont(Font.font("Verdana", 18));
-        plantName.setFill(Color.web("#3C5148"));
+        Text plantNameText = new Text(plantName);
+        plantNameText.setFont(Font.font("Verdant", 20));
+        plantNameText.setFill(Color.web("#3C5148"));
 
-        card.getChildren().addAll(imgView, plantName);
+        card.getChildren().addAll(imgView, plantNameText);
 
-        final double[] yScale = {card.getScaleY()};
-//         Hover scale effect
-        card.setOnMouseEntered(e -> card.setScaleX(yScale[0] = 1.05));
-        card.setOnMouseExited(e -> card.setScaleX(yScale[0] = 1.0));
+        // Hover scale effect
+        card.setOnMouseEntered(e -> card.setScaleY(1.05));
+        card.setOnMouseExited(e -> card.setScaleY(1.0));
 
         return card;
     }
@@ -350,6 +366,63 @@ public class MainView extends Application {
 
         primary.setBackground(new Background(backgroundImage));
         return primary;
+    }
+    private HBox createActionButtons() {
+        HBox buttonBox = new HBox(30);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setPadding(new Insets(30, 0, 30, 0));
+
+        // Add Plant Button
+        Button addPlantButton = new Button("Add a new plant");
+        addPlantButton.setStyle("""
+    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 23;
+    -fx-font-family: Verdant;
+    -fx-cursor: hand;
+""");
+        addPlantButton.setOnMouseEntered(e->{
+            addPlantButton.setEffect(addGlowEffect());
+
+        });
+
+        addPlantButton.setOnMouseExited(e->{
+            addPlantButton.setEffect(null);
+        });
+
+        // Scan Plant Button
+        Button scanPlantBtn = new Button("Scan a Plant");
+        scanPlantBtn.setStyle("""
+    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 24;
+    -fx-font-family: Verdant;
+    -fx-cursor: hand;
+""");
+
+        scanPlantBtn.setOnMouseEntered(e -> {
+            scanPlantBtn.setEffect(addGlowEffect());
+        });
+
+        scanPlantBtn.setOnMouseExited(e -> {
+            scanPlantBtn.setEffect(null);
+        });
+
+        buttonBox.getChildren().addAll(addPlantButton, scanPlantBtn);
+        return buttonBox;
+    }
+    private DropShadow addGlowEffect() {
+        DropShadow glow = new DropShadow();
+        glow.setColor(Color.web("#6B8E4E"));
+        glow.setRadius(3.5);
+        glow.setSpread(0.15);
+        return glow;
     }
 }
 
