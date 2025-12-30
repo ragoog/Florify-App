@@ -6,7 +6,6 @@ public class Session {
     public static void setUsername(String u) {
         username = u;
     }
-
     public static String getUsername() {
         return username;
     }

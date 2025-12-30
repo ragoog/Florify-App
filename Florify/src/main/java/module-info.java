@@ -48,4 +48,6 @@ module com.example.florify {
     opens com.example.florify.ui.main to javafx.graphics;
     exports com.example.florify.machineLearningModels;
     opens com.example.florify.machineLearningModels to com.fasterxml.jackson.databind, javafx.fxml;
+    exports com.example.florify.common;
+    opens com.example.florify.common to com.fasterxml.jackson.databind, javafx.fxml;
 }

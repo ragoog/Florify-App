@@ -29,6 +29,7 @@ import javafx.util.Duration;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class FeedPage extends Application {
@@ -254,6 +255,7 @@ public class FeedPage extends Application {
         if (text.isEmpty()) return;
 
         try {
+            LocalDateTime timestamp = LocalDateTime.now();
             Post newPost = new Post(Session.getUsername(), text);
             out.writeObject(newPost);
             out.flush();
