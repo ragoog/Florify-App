@@ -28,6 +28,10 @@ module com.example.florify {
     requires pmml.model;
     requires org.tensorflow;
     requires jdk.compiler;       // AWT / java.datatransfer
+    requires jakarta.xml.bind;   // API
+    requires org.glassfish.jaxb.runtime;
+    requires javafx.base; // Runtime
+
 
     exports com.example.florify;
     opens com.example.florify to javafx.fxml, com.fasterxml.jackson.databind;

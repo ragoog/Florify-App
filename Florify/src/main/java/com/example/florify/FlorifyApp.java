@@ -15,6 +15,7 @@ public class FlorifyApp extends Application {
     public void start(Stage stage)
     {
         stage.setTitle("Florify");
+        stage.setResizable(false);
         // first initialize it
         SceneManager.init(stage);
 

@@ -2,7 +2,9 @@ package com.example.florify.ui.feed;
 
 import com.example.florify.common.Post;
 import com.example.florify.common.Session;
+import com.example.florify.ui.login.LoginView;
 import com.example.florify.ui.main.MainView;
+import com.example.florify.ui.navigation.SceneManager;
 import com.sun.tools.javac.Main;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -50,7 +52,7 @@ public class FeedPage extends Application {
         root.setCenter(scrollPane);
 
         // Create Scene and show Stage
-        Scene scene = new Scene(root, 800, 900);
+        Scene scene = new Scene(root, 800, 720);
         stage.setScene(scene);
         stage.setTitle("Florify");
         stage.show();
@@ -105,8 +107,18 @@ public class FeedPage extends Application {
         // Buttons
         HBox buttonsPane = new HBox(100);
         Button homeButton = createNavButton("Home");
+        homeButton.setOnAction(e -> {
+            Scene scene = SceneManager.loadMainScene();
+            SceneManager.switchScene(scene);
+        });
+
+
         Button communityButton = createNavButton("Community");
         Button logoutButton = createNavButton("Logout");
+        logoutButton.setOnAction(e -> {
+            LoginView scene = SceneManager.loadLoginScene();
+            SceneManager.switchScene(scene.getScene());
+        });
         buttonsPane.getChildren().addAll(homeButton, communityButton, logoutButton);
         buttonsPane.setAlignment(Pos.CENTER);
 
@@ -158,7 +170,6 @@ public class FeedPage extends Application {
                         "-fx-border-color: transparent;" +
                         "-fx-cursor: hand;"
         ));
-
         return btn;
     }
 

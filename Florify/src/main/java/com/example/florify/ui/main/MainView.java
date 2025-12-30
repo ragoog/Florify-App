@@ -1,5 +1,7 @@
 package com.example.florify.ui.main;
 
+import com.example.florify.ui.login.LoginView;
+import com.example.florify.ui.navigation.SceneManager;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -193,7 +195,7 @@ public class MainView extends Application {
         tabPane.getChildren().addAll(tipTitle, tipLabel);
         return tabPane;
     }
-    @NotNull
+
     private static Label getLabel(String tipOfTheDay) {
         Label tipLabel = new Label(tipOfTheDay);
         tipLabel.setEffect(new DropShadow(5, Color.rgb(0,0,0,0.5)));
@@ -291,8 +293,19 @@ public class MainView extends Application {
         //region buttons button
         HBox buttonsPane  = new HBox(100);
         Button homeButton = createNavButton("Home");
+
         Button communityButton = createNavButton("Community");
+        communityButton.setOnAction(e -> {
+            Scene scene = SceneManager.loadFeedScene();
+            SceneManager.switchScene(scene);
+        });
+
         Button logoutButton = createNavButton("Logout");
+        logoutButton.setOnAction(e -> {
+            LoginView scene = SceneManager.loadLoginScene();
+            SceneManager.switchScene(scene.getScene());
+        });
+
         buttonsPane.getChildren().addAll(homeButton, communityButton, logoutButton);
         buttonsPane.setAlignment(Pos.CENTER);
 
@@ -393,6 +406,10 @@ public class MainView extends Application {
             addPlantButton.setEffect(null);
         });
 
+        addPlantButton.setOnAction(e -> {
+            SceneManager.openPopupScene(new PlantInfoFormView());
+        });
+
         // Scan Plant Button
         Button scanPlantBtn = new Button("Scan a Plant");
         scanPlantBtn.setStyle("""
@@ -414,6 +431,10 @@ public class MainView extends Application {
             scanPlantBtn.setEffect(null);
         });
 
+        scanPlantBtn.setOnAction(e -> {
+            SceneManager.openPopupScene(new ScanPlant());
+        });
+
         Button search = new Button("Search Plant");
         search.setStyle("""
     -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
@@ -427,11 +448,14 @@ public class MainView extends Application {
 """);
         search.setOnMouseEntered(e->{
             search.setEffect(addGlowEffect());
-
         });
 
         search.setOnMouseExited(e->{
             search.setEffect(null);
+        });
+
+        search.setOnAction(e -> {
+            SceneManager.openPopupScene(new PlantResults());
         });
 
         buttonBox.getChildren().addAll(search, addPlantButton, scanPlantBtn);

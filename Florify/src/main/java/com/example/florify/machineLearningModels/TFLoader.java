@@ -2,8 +2,6 @@ package com.example.florify.machineLearningModels;
 
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.ndarray.Shape;
-import org.tensorflow.ndarray.buffer.DataBuffers;
-import org.tensorflow.ndarray.buffer.FloatDataBuffer;
 import org.tensorflow.types.TFloat32;
 
 import javax.imageio.ImageIO;
@@ -17,7 +15,9 @@ import java.util.Map;
 
 public class TFLoader {
 
+    private static TFLoader instance;
     private SavedModelBundle model;
+    private boolean isModelLoaded = false;
 
     // Class labels for the 12 plant disease classes
     private static final String[] CLASS_LABELS = {
@@ -35,9 +35,28 @@ public class TFLoader {
             "Tomato - Healthy"
     };
 
+    // Private constructor for singleton
+    private TFLoader() {}
+
+    public static synchronized TFLoader getInstance() {
+        if (instance == null) {
+            instance = new TFLoader();
+        }
+        return instance;
+    }
+
+    /**
+     * Load the CNN model
+     */
     public void loadCNNModel(String modelPath) {
+        if (isModelLoaded) {
+            System.out.println("Model already loaded");
+            return;
+        }
+
         try {
             model = SavedModelBundle.load(modelPath, "serve");
+            isModelLoaded = true;
             System.out.println("Model loaded successfully from: " + modelPath);
         } catch (Exception e) {
             System.err.println("Failed to load model: " + e.getMessage());
@@ -46,9 +65,14 @@ public class TFLoader {
     }
 
     /**
+     * Check if model is loaded
+     */
+    public boolean isModelLoaded() {
+        return isModelLoaded;
+    }
+
+    /**
      * Preprocess image file for model input
-     * @param imagePath path to the image file
-     * @return preprocessed image data [1][224][224][3]
      */
     private float[][][][] preprocessImage(String imagePath) throws IOException {
         BufferedImage originalImage = ImageIO.read(new File(imagePath));
@@ -62,16 +86,15 @@ public class TFLoader {
         g2d.drawImage(originalImage.getScaledInstance(224, 224, Image.SCALE_SMOOTH), 0, 0, null);
         g2d.dispose();
 
-        // Convert to float array with EfficientNet preprocessing [-1, 1]
+        // Convert to float array
         float[][][][] input = new float[1][224][224][3];
 
         for (int h = 0; h < 224; h++) {
             for (int w = 0; w < 224; w++) {
                 int rgb = resizedImage.getRGB(w, h);
-                // EfficientNet preprocessing: (pixel / 127.5) - 1.0
-                input[0][h][w][0] = (((rgb >> 16) & 0xFF) / 127.5f) - 1.0f; // Red
-                input[0][h][w][1] = (((rgb >> 8) & 0xFF) / 127.5f) - 1.0f;  // Green
-                input[0][h][w][2] = ((rgb & 0xFF) / 127.5f) - 1.0f;         // Blue
+                input[0][h][w][0] = (float) ((rgb >> 16) & 0xFF); // Red
+                input[0][h][w][1] = (float) ((rgb >> 8) & 0xFF); // Green
+                input[0][h][w][2] = (float) (rgb & 0xFF); // Blue
             }
         }
 
@@ -80,11 +103,10 @@ public class TFLoader {
 
     /**
      * Predict plant disease from image file
-     * @param imagePath path to the plant image
-     * @return prediction result as a formatted string
+     * Returns ONLY the formatted result string
      */
     public String predictFromImage(String imagePath) {
-        if (model == null) {
+        if (!isModelLoaded) {
             return "Error: Model not loaded. Call loadCNNModel() first.";
         }
 
@@ -97,11 +119,11 @@ public class TFLoader {
             int predictedClass = (int) result.get("label");
             float confidence = (float) result.get("confidence");
 
-            // Format the result
+            // Format and return the result
             String diseaseName = getLabelName(predictedClass);
             String confidenceStr = String.format("%.2f%%", confidence * 100);
 
-            return String.format("Disease: %s | Confidence: %s", diseaseName, confidenceStr);
+            return String.format("Disease: %s\nConfidence: %s", diseaseName, confidenceStr);
 
         } catch (IOException e) {
             return "Error: Failed to read image - " + e.getMessage();
@@ -111,7 +133,7 @@ public class TFLoader {
     }
 
     /**
-     * Internal prediction method - FIXED VERSION
+     * Internal prediction method
      */
     private Map<String, Object> predict(float[][][][] inputData) {
         Map<String, Object> prediction = new HashMap<>();
@@ -121,11 +143,9 @@ public class TFLoader {
         int width = inputData[0][0].length;
         int channels = inputData[0][0][0].length;
 
-        // Create tensor with proper shape
         try (TFloat32 inputTensor = TFloat32.tensorOf(Shape.of(batch, height, width, channels))) {
 
-            // CRITICAL FIX: Use the NdArray API to write data directly
-            // This properly transfers your data to the tensor
+            // Transfer data to tensor
             for (int b = 0; b < batch; b++) {
                 for (int h = 0; h < height; h++) {
                     for (int w = 0; w < width; w++) {
@@ -150,17 +170,13 @@ public class TFLoader {
                 int maxIdx = 0;
                 float maxProb = outputTensor.getFloat(0, 0);
 
-                System.out.println("\n=== All Class Probabilities ===");
                 for (int i = 0; i < numClasses; i++) {
                     float prob = outputTensor.getFloat(0, i);
-                    System.out.printf("%-35s: %6.2f%%\n", CLASS_LABELS[i], prob * 100);
-
                     if (prob > maxProb) {
                         maxProb = prob;
                         maxIdx = i;
                     }
                 }
-                System.out.println("================================\n");
 
                 prediction.put("label", maxIdx);
                 prediction.put("confidence", maxProb);
@@ -183,66 +199,14 @@ public class TFLoader {
         return "Unknown (Class " + labelIndex + ")";
     }
 
+    /**
+     * Close the model (call when app shuts down)
+     */
     public void close() {
         if (model != null) {
             model.close();
             model = null;
-        }
-    }
-
-    public void printModelSignature() {
-        if (model == null) {
-            System.out.println("Model not loaded");
-            return;
-        }
-
-        System.out.println("\n=== Model Signature Details ===");
-        model.metaGraphDef().getSignatureDefMap().forEach((signatureKey, signatureDef) -> {
-            System.out.println("\nSignature: " + signatureKey);
-
-            System.out.println("  Inputs:");
-            signatureDef.getInputsMap().forEach((inputKey, tensorInfo) -> {
-                System.out.println("    Key: " + inputKey);
-                System.out.println("    Name: " + tensorInfo.getName());
-                System.out.println("    Dtype: " + tensorInfo.getDtype());
-                System.out.println("    Shape: " + tensorInfo.getTensorShape());
-            });
-
-            System.out.println("  Outputs:");
-            signatureDef.getOutputsMap().forEach((outputKey, tensorInfo) -> {
-                System.out.println("    Key: " + outputKey);
-                System.out.println("    Name: " + tensorInfo.getName());
-                System.out.println("    Dtype: " + tensorInfo.getDtype());
-                System.out.println("    Shape: " + tensorInfo.getTensorShape());
-            });
-        });
-        System.out.println("=================================\n");
-    }
-}
-
-
-// Test class
-class TestCNN {
-    public static void main(String[] args) {
-        TFLoader loader = new TFLoader();
-
-        try {
-            String modelPath = "C:\\Users\\omaro\\Florify-App\\Florify\\src\\main\\resources\\plant_disease_detector";
-            loader.loadCNNModel(modelPath);
-
-            // Test with an image file
-            String imagePath = "C:\\Users\\omaro\\OneDrive\\Desktop\\Study\\Java Project\\New folder\\Plant_disease\\Some images to test with manually\\Septoria-Leaf-Spot-Tomato-Diseases.jpg";
-
-            // Get prediction as string
-            String result = loader.predictFromImage(imagePath);
-            System.out.println("\nPrediction Result:");
-            System.out.println(result);
-
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            loader.close();
+            isModelLoaded = false;
         }
     }
 }

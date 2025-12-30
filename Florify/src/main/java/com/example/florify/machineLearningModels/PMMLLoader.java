@@ -6,29 +6,46 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PMMLLoader {
+public class PMMLLoader     // pmml stands for portable machine learning model
+{
 
-    public static Evaluator loadRfModel(String resourcePath) throws Exception {
-        InputStream is = PMMLLoader.class.getResourceAsStream(resourcePath);
+    // Singleton instance
+    private static PMMLLoader instance;
+
+    // Evaluator loaded once
+    private Evaluator rfModel;
+
+    // Private constructor
+    private PMMLLoader(String resourcePath) throws Exception
+    {
+        InputStream is = getClass().getResourceAsStream(resourcePath);
         if (is == null) {
             throw new IllegalArgumentException("PMML file not found: " + resourcePath);
         }
 
-        Evaluator evaluator = new LoadingModelEvaluatorBuilder()
+        rfModel = new LoadingModelEvaluatorBuilder()
                 .load(is)
                 .build();
 
-        // Must call verify() to fully initialize evaluator
-        evaluator.verify();
-
-        return evaluator;
+        rfModel.verify(); // initialize evaluator
     }
 
-    public static String rfModelPrediction(Evaluator model, Double soilMoisture, Double temperature, Double humidity,
-                                         Double lightHours, Double daysSinceWatering) throws Exception
-    {
+    // Public method to get the singleton instance
+    public static PMMLLoader getInstance(String resourcePath) throws Exception {
+        if (instance == null) {
+            instance = new PMMLLoader(resourcePath);
+        }
+        return instance;
+    }
 
-        // Prepare input
+    // Get the loaded model
+    public Evaluator getRfModel() {
+        return rfModel;
+    }
+    // Prediction method
+    public String rfModelPrediction(Double soilMoisture, Double temperature, Double humidity,
+                                    Double lightHours, Double daysSinceWatering) throws Exception {
+
         Map<String, Object> input = new HashMap<>();
         input.put("soil_moisture", soilMoisture);
         input.put("temperature", temperature);
@@ -36,21 +53,17 @@ public class PMMLLoader {
         input.put("light_hours", lightHours);
         input.put("days_since_watering", daysSinceWatering);
 
-        // Evaluate
-        Map<String, ?> result = model.evaluate(input);
+        Map<String, ?> result = rfModel.evaluate(input);
 
-        // Get target field
-        TargetField targetField = model.getTargetFields().get(0);
+        TargetField targetField = rfModel.getTargetFields().get(0);
         String targetName = targetField.getName();
 
-        // The prediction is usually inside a Computable object
         Object raw = result.get(targetName);
         Object predictionLabel;
 
         if(raw instanceof Computable computable){
             Object computed = computable.getResult();
             if(computed instanceof Map<?, ?> map){
-                // For classification: pick the key with highest probability
                 Map<String, Double> probs = (Map<String, Double>) map;
                 predictionLabel = probs.entrySet()
                         .stream()
@@ -58,7 +71,7 @@ public class PMMLLoader {
                         .get()
                         .getKey();
             } else {
-                predictionLabel = computed; // regression model
+                predictionLabel = computed;
             }
         } else {
             predictionLabel = raw;

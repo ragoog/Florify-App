@@ -396,17 +396,20 @@ public class PlantInfoFormView extends Application {
                 Double lightHours = Double.parseDouble(lightField.getText());
                 Double daysSinceWatering = Double.parseDouble(careField.getText());
 
-                // Load the model
-                Evaluator evaluator = PMMLLoader.loadRfModel("/Watering_Predictor.pmml");
+
+                // HERE THE MACHINE LEARNING PART CALLING RANDOM FOREST MODEL
+                //region SINGLETON PATTERN USAGE
+                // Load the model (USING SINGLETON PATTERN) (GET THE INSTANCE)
+                PMMLLoader evaluator = PMMLLoader.getInstance("/Watering_Predictor.pmml");
                 // Get prediction from PMML
-                String result = PMMLLoader.rfModelPrediction(
-                        evaluator,
+                String result = evaluator.rfModelPrediction(
                         soilMoisture,
                         temperature,
                         humidity,
                         lightHours,
                         daysSinceWatering
                 );
+                //endregion
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Watering Recommendation");
