@@ -21,10 +21,21 @@ public class Database
             );
             """;
 
+        String sqlQuery2 = """
+        CREATE TABLE IF NOT EXISTS posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            content TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        """;
+
+
         try(Connection connection = Database.getConnection();
             Statement statement = connection.createStatement())
         {
             statement.execute(sqlQuery);
+            statement.execute(sqlQuery2);
         }
         catch(SQLException e)
         {

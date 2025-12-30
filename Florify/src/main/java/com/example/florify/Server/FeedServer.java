@@ -1,11 +1,14 @@
 package com.example.florify.Server;
 
 import com.example.florify.common.Post;
+import com.example.florify.db.Database;
+import com.example.florify.db.PostDAO;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -23,6 +26,17 @@ public class FeedServer {
         System.out.println("Florify Feed Server started on port " + PORT);
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+
+            Database.init();
+
+            try {
+                // add all the items from database to array list
+                allPosts.addAll(PostDAO.loadAllPosts());
+                System.out.println("Loaded " + allPosts.size() + " posts from database");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
@@ -61,6 +75,8 @@ public class FeedServer {
                                 ": " +
                                 post.getContent()
                 );
+
+                PostDAO.savePost(post);     // to save in database
 
                 allPosts.add(post);
 

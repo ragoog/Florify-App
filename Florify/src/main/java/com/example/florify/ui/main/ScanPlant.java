@@ -3,27 +3,27 @@ package com.example.florify.ui.main;
 import com.example.florify.machineLearningModels.TFLoader;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.util.Objects;
 
 public class ScanPlant extends Application {
 
@@ -32,80 +32,311 @@ public class ScanPlant extends Application {
     private Label loadingLabel;
     private StackPane imageContainer;
     private TFLoader modelLoader;
+    private VBox uploadSection;
+    private Label statusLabel;
 
-    // Update this path to your model location
     private static final String MODEL_PATH = "C:\\Users\\omaro\\Florify-App\\Florify\\src\\main\\resources\\plant_disease_detector";
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Plant Disease Scanner");
+        primaryStage.setTitle("Florify - Plant Disease Scanner");
 
-        // Initialize the ML model loader (singleton)
+        // Initialize the ML model loader
         modelLoader = TFLoader.getInstance();
 
-        // Load model in background thread
+        // Load model in background
         new Thread(() -> {
             try {
                 modelLoader.loadCNNModel(MODEL_PATH);
+                Platform.runLater(() -> updateStatus("✓ CNN Model Ready", "#6B8E4E"));
             } catch (Exception e) {
-                Platform.runLater(() -> showError("Failed to load ML model: " + e.getMessage()));
+                Platform.runLater(() -> {
+                    updateStatus("⚠ Model Loading Failed", "#cc0000");
+                    showError("Failed to load ML model: " + e.getMessage());
+                });
             }
         }).start();
 
-        imageView = new ImageView();
-        imageView.setFitWidth(400);
-        imageView.setFitHeight(300);
-        imageView.setPreserveRatio(true);
+        // Main container
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #f8faf9, #e8f5e9);");
 
+        // Top bar
+        HBox topBar = createStyledTopBar();
+        root.setTop(topBar);
 
-        // HIDE THESE BY DEFAULT AND ONLY SHOW THEM WHEN NEEDED
-        // Create loading indicator
-        loadingIndicator = new ProgressIndicator();
-        loadingIndicator.setMaxSize(60, 60);
-        loadingIndicator.setVisible(false);
+        // Center content
+        VBox centerContent = createCenterContent();
+        root.setCenter(centerContent);
 
-        loadingLabel = new Label("Analyzing plant...");
-        loadingLabel.setStyle("-fx-font-size: 14; -fx-text-fill: #6B8E4E; -fx-font-weight: bold;");
-        loadingLabel.setVisible(false);
-
-        // Container for image and loading overlay
-        imageContainer = new StackPane();
-        imageContainer.setAlignment(Pos.CENTER);
-        imageContainer.getChildren().addAll(imageView, loadingIndicator);
-
-        // Create Upload Button
-        Button uploadButton = new Button("Upload Image");
-        uploadButton.setStyle("""
-            -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
-            -fx-background-radius: 12;
-            -fx-border-radius: 12;
-            -fx-text-fill: white;
-            -fx-font-weight: bold;
-            -fx-font-size: 16;
-            -fx-font-family: Verdant;
-            -fx-cursor: hand;
-        """);
-        uploadButton.setOnAction(e -> uploadImage(primaryStage));
-
-        // Layout
-        VBox layout = new VBox(20);
-        layout.setAlignment(Pos.CENTER);
-        layout.setPadding(new Insets(20));
-        layout.getChildren().addAll(uploadButton, imageContainer, loadingLabel);
-
-        Scene scene = new Scene(layout, 500, 450);
+        Scene scene = new Scene(root, 900, 720);
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Close model when app closes
         primaryStage.setOnCloseRequest(e -> modelLoader.close());
+    }
+
+    private HBox createStyledTopBar() {
+        HBox topBar = new HBox(15);
+        topBar.setPrefHeight(70);
+        topBar.setPadding(new Insets(15, 30, 15, 30));
+        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.95);" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 2);"
+        );
+
+        // Icon
+        String imgLink = "/com/example/florify/Petite_plante_sur_le_sol_dans_un_style_pixel_art___Vecteur_Premium-removebg-preview.png";
+        try {
+            Image iconImage = new Image(Objects.requireNonNull(getClass().getResource(imgLink)).toExternalForm());
+            ImageView iconView = new ImageView(iconImage);
+            iconView.setFitHeight(45);
+            iconView.setFitWidth(45);
+            topBar.getChildren().add(iconView);
+        } catch (Exception ignored) {}
+
+        // Title section
+        VBox titleBox = new VBox(2);
+        Label title = new Label("Florify Disease Scanner");
+        title.setStyle(
+                "-fx-font-size: 26px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #2C4A3E;" +
+                        "-fx-font-weight: bold;"
+        );
+
+        Label subtitle = new Label("AI-Powered Plant Health Analysis");
+        subtitle.setStyle(
+                "-fx-font-size: 13px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #6B8E4E;" +
+                        "-fx-font-weight: bold;"
+        );
+
+        titleBox.getChildren().addAll(title, subtitle);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        // Status indicator
+        statusLabel = new Label("⟳ Loading Model...");
+        statusLabel.setStyle(
+                "-fx-font-size: 12px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #999999;" +
+                        "-fx-padding: 8 15 8 15;" +
+                        "-fx-background-color: #f5f5f5;" +
+                        "-fx-background-radius: 20;"
+        );
+
+        topBar.getChildren().addAll(titleBox, spacer, statusLabel);
+        return topBar;
+    }
+
+    private VBox createCenterContent() {
+        VBox content = new VBox(30);
+        content.setAlignment(Pos.CENTER);
+        content.setPadding(new Insets(40));
+
+        // Welcome card
+        VBox welcomeCard = createWelcomeCard();
+
+        // Upload section with image preview
+        uploadSection = createUploadSection();
+
+        content.getChildren().addAll(welcomeCard, uploadSection);
+        return content;
+    }
+
+    private VBox createWelcomeCard() {
+        VBox card = new VBox(10);
+        card.setMaxWidth(600);
+        card.setPadding(new Insets(10));
+        card.setAlignment(Pos.CENTER);
+        card.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-background-radius: 16;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(107, 142, 78, 0.2), 15, 0, 0, 4);"
+        );
+
+
+        Label title = new Label("Advanced Plant Disease Detection");
+        title.setStyle(
+                "-fx-font-size: 24px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #2C4A3E;" +
+                        "-fx-font-weight: bold;"
+        );
+
+        Label description = new Label(
+                "Upload a clear image of your plant's leaves to identify diseases and get treatment recommendations"
+        );
+        description.setWrapText(true);
+        description.setMaxWidth(600);
+        description.setAlignment(Pos.CENTER);
+        description.setStyle(
+                "-fx-font-size: 15px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #666666;" +
+                        "-fx-text-alignment: center;"
+        );
+
+        String imgLink = "/com/example/florify/scanner.png";
+        Image bg = new Image(Objects.requireNonNull(getClass().getResource(imgLink)).toExternalForm());
+        ImageView image = new ImageView(bg);
+        image.setPreserveRatio(true);
+        image.setFitWidth(60);
+
+        card.getChildren().addAll(image, title, description);
+        return card;
+    }
+
+    private VBox createUploadSection() {
+        VBox section = new VBox(20);
+        section.setMaxWidth(700);
+        section.setAlignment(Pos.CENTER);
+
+        // Image preview container with rounded corners
+        imageContainer = new StackPane();
+        imageContainer.setPrefSize(500, 350);
+        imageContainer.setMaxSize(500, 350);
+        imageContainer.setStyle(
+                "-fx-background-color: #fafafa;" +
+                        "-fx-border-color: #e0e0e0;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-border-style: dashed;" +
+                        "-fx-background-radius: 12;" +
+                        "-fx-border-radius: 12;"
+        );
+
+        // Image view
+        imageView = new ImageView();
+        imageView.setFitWidth(480);
+        imageView.setFitHeight(330);
+        imageView.setPreserveRatio(true);
+
+        Rectangle clip = new Rectangle(480, 330);
+        clip.setArcWidth(12);
+        clip.setArcHeight(12);
+        imageView.setClip(clip);
+
+        // Placeholder
+        VBox placeholder = new VBox(15);
+        placeholder.setAlignment(Pos.CENTER);
+        Label placeholderIcon = new Label("📷");
+        placeholderIcon.setStyle("-fx-font-size: 64px;");
+        Label placeholderText = new Label("No image selected");
+        placeholderText.setStyle(
+                "-fx-font-size: 16px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #999999;"
+        );
+        placeholder.getChildren().addAll(placeholderIcon, placeholderText);
+
+        // Loading indicator
+        loadingIndicator = new ProgressIndicator();
+        loadingIndicator.setMaxSize(70, 70);
+        loadingIndicator.setStyle("-fx-progress-color: #6B8E4E;");
+        loadingIndicator.setVisible(false);
+
+        VBox loadingBox = new VBox(15);
+        loadingBox.setAlignment(Pos.CENTER);
+        loadingBox.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.95);" +
+                        "-fx-background-radius: 12;" +
+                        "-fx-padding: 25;"
+        );
+
+        loadingLabel = new Label("Analyzing plant...");
+        loadingLabel.setStyle(
+                "-fx-font-size: 15px; " +
+                        "-fx-text-fill: #2C4A3E; " +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-family: Verdant;"
+        );
+        loadingLabel.setVisible(false);
+
+        loadingBox.getChildren().addAll(loadingIndicator, loadingLabel);
+
+        imageContainer.getChildren().addAll(placeholder, imageView, loadingBox);
+
+        // Upload button with enhanced styling
+        Button uploadButton = new Button("📁  Select Plant Image");
+        uploadButton.setPrefWidth(250);
+        uploadButton.setPrefHeight(50);
+        uploadButton.setStyle(
+                "-fx-background-color: linear-gradient(to right, #6B8E4E, #8BAA6F);" +
+                        "-fx-background-radius: 25;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-family: Verdant;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(107, 142, 78, 0.4), 10, 0, 0, 3);"
+        );
+
+        uploadButton.setOnMouseEntered(e -> {
+            uploadButton.setStyle(
+                    "-fx-background-color: linear-gradient(to right, #7BA05A, #9BBB7F);" +
+                            "-fx-background-radius: 25;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-font-size: 16px;" +
+                            "-fx-font-family: Verdant;" +
+                            "-fx-cursor: hand;" +
+                            "-fx-effect: dropshadow(gaussian, rgba(107, 142, 78, 0.6), 15, 0, 0, 4);" +
+                            "-fx-scale-x: 1.02;" +
+                            "-fx-scale-y: 1.02;"
+            );
+        });
+
+        uploadButton.setOnMouseExited(e -> {
+            uploadButton.setStyle(
+                    "-fx-background-color: linear-gradient(to right, #6B8E4E, #8BAA6F);" +
+                            "-fx-background-radius: 25;" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-font-size: 16px;" +
+                            "-fx-font-family: Verdant;" +
+                            "-fx-cursor: hand;" +
+                            "-fx-effect: dropshadow(gaussian, rgba(107, 142, 78, 0.4), 10, 0, 0, 3);"
+            );
+        });
+
+        uploadButton.setOnAction(e -> uploadImage((Stage) uploadButton.getScene().getWindow()));
+
+        // Tips section
+        HBox tipsBox = new HBox(15);
+        tipsBox.setAlignment(Pos.CENTER);
+        tipsBox.setMaxWidth(650);
+        tipsBox.setPadding(new Insets(15));
+        tipsBox.setStyle(
+                "-fx-background-color: #f0f7ed;" +
+                        "-fx-background-radius: 10;"
+        );
+
+        Label tipIcon = new Label("💡");
+        tipIcon.setStyle("-fx-font-size: 20px;");
+
+        Label tips = new Label("Best Results: Use well-lit photos with clear leaf details");
+        tips.setWrapText(true);
+        tips.setStyle(
+                "-fx-font-size: 13px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #4A6741;" +
+                        "-fx-font-weight: bold;"
+        );
+
+        tipsBox.getChildren().addAll(tipIcon, tips);
+
+        section.getChildren().addAll(imageContainer, uploadButton, tipsBox);
+        return section;
     }
 
     private void uploadImage(Stage stage) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Plant Image");
-
-        // Set file extension filters
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
         );
@@ -113,30 +344,29 @@ public class ScanPlant extends Application {
         File selectedFile = fileChooser.showOpenDialog(stage);
 
         if (selectedFile != null) {
-            // Load and display the image
             Image image = new Image(selectedFile.toURI().toString());
             imageView.setImage(image);
 
-            // Check if model is loaded
+            // Fade in animation
+            FadeTransition fade = new FadeTransition(Duration.millis(400), imageView);
+            fade.setFromValue(0);
+            fade.setToValue(1);
+            fade.play();
+
             if (!modelLoader.isModelLoaded()) {
                 showError("Model is still loading. Please wait a moment and try again.");
                 return;
             }
 
-            // Show loading indicator
             showLoading(true);
 
-            // Run prediction in background thread
             new Thread(() -> {
                 try {
                     String result = modelLoader.predictFromImage(selectedFile.getAbsolutePath());
-
-                    // Update UI on JavaFX thread
                     Platform.runLater(() -> {
                         showLoading(false);
                         showResult(result);
                     });
-
                 } catch (Exception e) {
                     Platform.runLater(() -> {
                         showLoading(false);
@@ -150,84 +380,68 @@ public class ScanPlant extends Application {
     private void showLoading(boolean show) {
         loadingIndicator.setVisible(show);
         loadingLabel.setVisible(show);
+
+        if (show) {
+            FadeTransition fade = new FadeTransition(Duration.millis(300), loadingIndicator.getParent());
+            fade.setFromValue(0);
+            fade.setToValue(1);
+            fade.play();
+        }
     }
 
     private void showResult(String result) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Scan Result");
-        alert.setHeaderText("Plant Disease Detection");
-        alert.setContentText(result);
-        alert.setGraphic(null);
+        alert.setTitle("Disease Detection Result");
+        alert.setHeaderText(null);
 
-        // Style the OK button
-        alert.getDialogPane().lookupButton(ButtonType.OK).setStyle("""
-            -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
-            -fx-background-radius: 12;
-            -fx-border-radius: 12;
-            -fx-text-fill: white;
-            -fx-font-weight: bold;
-            -fx-font-size: 16;
-            -fx-font-family: Verdant;
-            -fx-cursor: hand;
-        """);
-
-        alert.showAndWait();
-    }
-
-    private static Label getLabel(String tipOfTheDay) {
-        Label tipLabel = new Label(tipOfTheDay);
-        tipLabel.setEffect(new DropShadow(5, Color.rgb(0,0,0,0.5)));
-        tipLabel.setStyle(
-                "-fx-font-family: Verdant;" +
-                        "-fx-font-size: 15px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-text-fill: linear-gradient(to bottom, #3C5148, #6B8E4E);" +
-                        "-fx-fill: #3C5148;" +
-                        "-fx-stroke: #1B2727;" +
-                        "-fx-stroke-width: 0.5;"
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-background-radius: 12;"
         );
 
-        String fullText = tipLabel.getText();
-        tipLabel.setText("");
+        // Custom content
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setAlignment(Pos.CENTER);
 
-        Timeline timeline = new Timeline();
-        timeline.setCycleCount(Timeline.INDEFINITE);
+        Label icon = new Label("🔬");
+        icon.setStyle("-fx-font-size: 48px;");
 
-        final int[] idx = {0};           // current character index
-        final int[] dir = {1};           // 1 = forward, -1 = backward
-        final int[] pauseCounter = {0};
-        int pauseDuration = 40;   // number of frames to wait at full/empty 50ms * 40 = 2 seconds
+        Label titleLabel = new Label("Analysis Complete");
+        titleLabel.setStyle(
+                "-fx-font-size: 20px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #2C4A3E;" +
+                        "-fx-font-weight: bold;"
+        );
 
-        KeyFrame kf = new KeyFrame(Duration.millis(50), e -> {
-            // eli gowa el lamda expression must be 1) final 2) array
+        Label resultLabel = new Label(result);
+        resultLabel.setWrapText(true);
+        resultLabel.setMaxWidth(400);
+        resultLabel.setStyle(
+                "-fx-font-size: 14px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: #333333;" +
+                        "-fx-text-alignment: center;"
+        );
+        resultLabel.setAlignment(Pos.CENTER);
 
-            // if it is below 0 keep it at 0 AKA CLAMPING
-            if(idx[0] < 0) idx[0] = 0;
-            if(dir[0] > fullText.length()) idx[0] = fullText.length();
+        content.getChildren().addAll(icon, titleLabel, resultLabel);
+        dialogPane.setContent(content);
 
-            // If we are at the end or start, increment pause counter
-            if ((idx[0] == fullText.length() && dir[0] == 1) || (idx[0] == 0 && dir[0] == -1)) {
-                // delete the first letter too
-                if(idx[0] == 0) tipLabel.setText("");
+        dialogPane.lookupButton(ButtonType.OK).setStyle(
+                "-fx-background-color: linear-gradient(to right, #6B8E4E, #8BAA6F);" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-family: Verdant;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-padding: 10 25 10 25;"
+        );
 
-                if (pauseCounter[0] < pauseDuration) {
-                    pauseCounter[0]++;
-                    return; // do nothing, just wait
-                } else {
-                    pauseCounter[0] = 0;
-                    dir[0] *= -1; // reverse direction
-                }
-            }
-
-            tipLabel.setText(fullText.substring(0, idx[0]));
-            idx[0] += dir[0];
-        });
-
-        timeline.getKeyFrames().add(kf);
-        timeline.play();
-
-        tipLabel.setWrapText(true); // so the tip wraps if too long
-        return tipLabel;
+        alert.showAndWait();
     }
 
     private void showError(String message) {
@@ -235,15 +449,30 @@ public class ScanPlant extends Application {
         alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
+
+        alert.getDialogPane().lookupButton(ButtonType.OK).setStyle(
+                "-fx-background-color: #cc0000;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-family: Verdant;" +
+                        "-fx-padding: 10 25 10 25;"
+        );
+
         alert.showAndWait();
     }
 
-    private DropShadow addGlowEffect() {
-        DropShadow glow = new DropShadow();
-        glow.setColor(Color.web("#6B8E4E"));
-        glow.setRadius(3.5);
-        glow.setSpread(0.15);
-        return glow;
+    private void updateStatus(String text, String color) {
+        statusLabel.setText(text);
+        statusLabel.setStyle(
+                "-fx-font-size: 12px; " +
+                        "-fx-font-family: Verdant; " +
+                        "-fx-text-fill: " + color + ";" +
+                        "-fx-padding: 8 15 8 15;" +
+                        "-fx-background-color: " + (color.equals("#6B8E4E") ? "#e8f5e9" : "#ffe6e6") + ";" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-font-weight: bold;"
+        );
     }
 
     public static void main(String[] args) {
