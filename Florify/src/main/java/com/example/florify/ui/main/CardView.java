@@ -30,7 +30,7 @@ public class CardView extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        String imgLink = "/com/example/florify/WhatsApp Image 2025-12-29 at 6.37.34 PM.jpeg";
+        String imgLink = "/com/example/florify/9c4e4505-0b82-4eb5-ab24-fe81d8833b01.png";
         VBox upperHalf = createStyledUpperHalf(imgLink, "Spinach");
 
         Scene scene = new Scene(upperHalf);
