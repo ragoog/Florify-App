@@ -3,14 +3,12 @@ package com.example.florify.ui.main;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
@@ -20,20 +18,22 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.jetbrains.annotations.NotNull;
 
+import javax.print.DocFlavor;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.Objects;
 
 public class MainView extends Application {
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    public static void main(String[] args) { launch(args); }
 
 
     @Override
@@ -42,12 +42,89 @@ public class MainView extends Application {
         HBox upperBox = createStyledTopBar();
         VBox tipPane = createStyledTipBar();
 
+        HBox cardContainer = new HBox(20);
+        cardContainer.setAlignment(Pos.CENTER_LEFT);
+        cardContainer.setPadding(new Insets(20));
+
+
+
+        for(int i = 0; i < 11; i++)
+        {
+            VBox card = createPlantCard();
+            cardContainer.getChildren().add(card);
+        }
+
+        ScrollPane scrollPane = new ScrollPane(cardContainer);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setPannable(true);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-padding: 10;");
+
+        scrollPane.setOnScrollFinished(e -> snapToClosestCard(scrollPane, cardContainer));
+
+
         VBox primary = createStyledPrimary();
-        primary.getChildren().addAll(upperBox, tipPane);
+        primary.getChildren().addAll(upperBox, tipPane, scrollPane);
 
         Scene scene = new Scene(primary, 1080, 720);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+
+    private void snapToClosestCard(ScrollPane scrollPane, HBox container) {
+        double scrollX = scrollPane.getHvalue() * (container.getWidth() - scrollPane.getWidth());
+        double closest = 0;
+        double minDist = Double.MAX_VALUE;
+
+        for (int i = 0; i < container.getChildren().size(); i++) {
+            double cardCenter = container.getChildren().get(i).getLayoutX() + container.getChildren().get(i).getBoundsInParent().getWidth() / 2.0;
+            double dist = Math.abs(cardCenter - scrollX - scrollPane.getWidth() / 2.0);
+            if (dist < minDist) {
+                minDist = dist;
+                closest = cardCenter;
+            }
+        }
+
+        double targetHValue = (closest - scrollPane.getWidth() / 2.0) / (container.getWidth() - scrollPane.getWidth());
+        targetHValue = Math.max(0, Math.min(1, targetHValue));
+
+        TranslateTransition tt = new TranslateTransition(Duration.millis(300));
+        tt.setToX(0); // dummy, we animate via hvalue
+        tt.play();
+
+        scrollPane.setHvalue(targetHValue);
+    }
+
+    private VBox createPlantCard()
+    {
+        VBox card = new VBox(10);
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new Insets(10));
+        card.setPrefSize(60, 100);
+        card.setStyle("-fx-background-color: #f0f0f0; -fx-background-radius: 15;");
+        card.setEffect(new DropShadow(10, Color.gray(0.3)));
+
+        // plant image
+        String imgLink = "/com/example/florify/WhatsApp Image 2025-12-29 at 6.37.34 PM (1).jpeg";
+        Image img = new Image(Objects.requireNonNull(getClass().getResource(imgLink)).toExternalForm(), 180, 180, true, true);
+        ImageView imgView = new ImageView(img);
+//        imgView.setSmooth(true);
+
+        // Plant name
+        Text plantName = new Text("Tomato");
+        plantName.setFont(Font.font("Verdana", 18));
+        plantName.setFill(Color.web("#3C5148"));
+
+        card.getChildren().addAll(imgView, plantName);
+
+        final double[] yScale = {card.getScaleY()};
+//         Hover scale effect
+        card.setOnMouseEntered(e -> card.setScaleX(yScale[0] = 1.05));
+        card.setOnMouseExited(e -> card.setScaleX(yScale[0] = 1.0));
+
+        return card;
     }
 
     private VBox createStyledTipBar()

@@ -14,6 +14,11 @@ module com.example.florify {
     requires javafx.graphics;
     requires java.sql;
     requires annotations;
+    requires java.desktop;
+    requires java.net.http;
+    requires com.fasterxml.jackson.annotation;
+    requires com.fasterxml.jackson.databind;
+    requires org.json;
 //    requires com.example.florify;
     opens com.example.florify.ui.main to javafx.graphics;
     exports com.example.florify;
