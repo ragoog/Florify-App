@@ -106,18 +106,12 @@ public class MainView extends Application {
         card.setStyle("-fx-background-color: #f0f0f0; -fx-background-radius: 15;");
         card.setEffect(new DropShadow(10, Color.gray(0.3)));
 
-        // plant image
-        String imgLink = "/com/example/florify/WhatsApp Image 2025-12-29 at 6.37.34 PM (1).jpeg";
-        Image img = new Image(Objects.requireNonNull(getClass().getResource(imgLink)).toExternalForm(), 180, 180, true, true);
-        ImageView imgView = new ImageView(img);
-//        imgView.setSmooth(true);
-
         // Plant name
         Text plantName = new Text("Tomato");
         plantName.setFont(Font.font("Verdana", 18));
         plantName.setFill(Color.web("#3C5148"));
 
-        card.getChildren().addAll(imgView, plantName);
+        card.getChildren().addAll(plantName);
 
         final double[] yScale = {card.getScaleY()};
 //         Hover scale effect

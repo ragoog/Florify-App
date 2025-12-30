@@ -1,9 +1,13 @@
 package com.example.florify.ui.login;
 
+import com.example.florify.Server.FeedServer;
 import com.example.florify.db.Database;
 import com.example.florify.db.UserDAO;
 import com.example.florify.ui.feed.FeedPage;
+import com.example.florify.ui.main.MainView;
+import com.example.florify.ui.navigation.SceneManager;
 import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -98,17 +102,8 @@ public class LoginController
                     new Thread(() -> ServerLauncher.startFeedServer()).start();
                     Session.setUsername(username);
 
-                    //did this so i can test if feed page is working
-                    Platform.runLater(() -> {
-                        try {
-                            FeedPage feedPage = new FeedPage();
-                            feedPage.start(new Stage());
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    });
-
-                    loginView.getScene().getWindow().hide();
+                    Scene mainScene = SceneManager.loadMainScene();
+                    SceneManager.switchScene(mainScene);
                 }
 
                 else

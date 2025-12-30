@@ -23,7 +23,11 @@ module com.example.florify {
     requires org.json;           // JSON library
     requires java.net.http;      // HTTP client
     requires java.desktop;
-    requires annotations;       // AWT / java.datatransfer
+    requires annotations;
+    requires pmml.evaluator;
+    requires pmml.model;
+    requires org.tensorflow;
+    requires jdk.compiler;       // AWT / java.datatransfer
 
     exports com.example.florify;
     opens com.example.florify to javafx.fxml, com.fasterxml.jackson.databind;
@@ -38,4 +42,6 @@ module com.example.florify {
     opens com.example.florify.ui.navigation to javafx.fxml;
 
     opens com.example.florify.ui.main to javafx.graphics;
+    exports com.example.florify.machineLearningModels;
+    opens com.example.florify.machineLearningModels to com.fasterxml.jackson.databind, javafx.fxml;
 }

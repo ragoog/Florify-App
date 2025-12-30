@@ -1,5 +1,6 @@
 package com.example.florify.ui.main;
 
+import com.example.florify.machineLearningModels.PMMLLoader;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,6 +10,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.jpmml.evaluator.Evaluator;
 
 public class PlantInfoFormView extends Application {
 
@@ -17,9 +19,10 @@ public class PlantInfoFormView extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws Exception {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #F5F5F5;");
+
 
         VBox formContainer = new VBox(25);
         formContainer.setPadding(new Insets(40));
@@ -35,7 +38,7 @@ public class PlantInfoFormView extends Application {
         );
         title.setAlignment(Pos.CENTER);
 
-// Animate gradient
+        // Animate gradient
         javafx.animation.Timeline colorAnim = new javafx.animation.Timeline(
                 new javafx.animation.KeyFrame(javafx.util.Duration.millis(50), e -> {
                     double t = (System.currentTimeMillis() % 3000) / 3000.0;
@@ -372,8 +375,77 @@ public class PlantInfoFormView extends Application {
     -fx-cursor: hand;
 """);
 
+        Label predictionLabel = new Label();
+        predictionLabel.setStyle(
+                "-fx-font-family: 'Verdant'; " +
+                        "-fx-font-size: 16px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-text-fill: #253528;"
+        );
+        formContainer.getChildren().add(predictionLabel); // Add it under the Save button
+
+
         saveBtn.setOnMouseEntered(e ->{saveBtn.setEffect(addGlowEffect());});
         saveBtn.setOnMouseExited(e ->{saveBtn.setEffect(null);});
+        saveBtn.setOnMousePressed(e -> {
+            try {
+                // Parse inputs
+                Double soilMoisture = Double.parseDouble(moistureField.getText());
+                Double temperature = Double.parseDouble(tempField.getText());
+                Double humidity = Double.parseDouble(humidityField.getText());
+                Double lightHours = Double.parseDouble(lightField.getText());
+                Double daysSinceWatering = Double.parseDouble(careField.getText());
+
+                // Load the model
+                Evaluator evaluator = PMMLLoader.loadRfModel("/Watering_Predictor.pmml");
+                // Get prediction from PMML
+                String result = PMMLLoader.rfModelPrediction(
+                        evaluator,
+                        soilMoisture,
+                        temperature,
+                        humidity,
+                        lightHours,
+                        daysSinceWatering
+                );
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Watering Recommendation");
+                alert.setHeaderText(null);
+                alert.setContentText(result);
+                // Style the dialog pane
+                alert.getDialogPane().setStyle(
+                        "-fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);" +
+                                "-fx-font-family: 'Verdant';" +
+                                "-fx-font-size: 16px;" +
+                                "-fx-font-weight: bold;" +
+                                "-fx-text-fill: white;" // Note: may not affect content text
+                );
+                alert.setGraphic(null);
+
+                // Optional: customize buttons
+                Button okButton = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+                okButton.setStyle(
+                        "-fx-background-color: #A0C48C;" +
+                                "-fx-text-fill: white;" +
+                                "-fx-font-weight: bold;"
+                );
+                alert.showAndWait();
+
+            } catch (NumberFormatException ex) {
+                predictionLabel.setText("Please enter valid numeric values!");
+            } catch (Exception ex) {
+                predictionLabel.setText("Error predicting: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+
+        });
+        saveBtn.disableProperty().bind(         // if any field is empty disable the button
+                moistureField.textProperty().isEmpty()
+                .or(tempField.textProperty().isEmpty())
+                .or(humidityField.textProperty().isEmpty())
+                .or(lightField.textProperty().isEmpty())
+                .or(careField.textProperty().isEmpty())
+        );
 
         formContainer.getChildren().addAll(title, nameSection, envSection, careSection, saveBtn);
 

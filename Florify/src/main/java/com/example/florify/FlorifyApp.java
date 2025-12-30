@@ -1,5 +1,6 @@
 package com.example.florify;
 
+import com.example.florify.ui.login.LoginController;
 import com.example.florify.ui.login.LoginView;
 import com.example.florify.ui.navigation.SceneManager;
 import javafx.application.Application;

@@ -2,6 +2,8 @@ package com.example.florify.ui.feed;
 
 import com.example.florify.common.Post;
 import com.example.florify.common.Session;
+import com.example.florify.ui.main.MainView;
+import com.sun.tools.javac.Main;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -209,8 +211,6 @@ public class FeedPage extends Application {
     -fx-font-family: Verdant;
     -fx-cursor: hand;
 """);
-
-
         postBtn.setPadding(new Insets(10, 30, 10, 30));
 
         postBtn.setOnMouseEntered(e->{
