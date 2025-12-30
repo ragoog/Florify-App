@@ -14,6 +14,7 @@ module com.example.florify {
     requires javafx.graphics;
     requires java.sql;
     requires annotations;
+    requires javafx.base;
 //    requires com.example.florify;
     opens com.example.florify.ui.main to javafx.graphics;
     exports com.example.florify;
