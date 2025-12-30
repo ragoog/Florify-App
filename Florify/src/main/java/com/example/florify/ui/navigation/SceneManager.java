@@ -1,6 +1,4 @@
 package com.example.florify.ui.navigation;
-import com.almasb.fxgl.app.scene.StartupScene;
-import com.example.florify.ui.feed.FeedPage;
 import com.example.florify.ui.login.LoginController;
 import com.example.florify.ui.login.LoginView;
 import javafx.scene.Scene;

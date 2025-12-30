@@ -2,19 +2,25 @@ package com.example.florify.ui.feed;
 
 import com.example.florify.common.Post;
 import com.example.florify.common.Session;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -25,168 +31,231 @@ public class FeedPage extends Application {
 
     private ObjectOutputStream out;
     private ObjectInputStream in;
-
-    private VBox postsContainer;
-
-    public static void main(String[] args) {
-        launch(args);
-    }
+    private VBox feedContainer;
+    private TextArea postInput;
 
     @Override
     public void start(Stage stage) {
-        // Main pane
         BorderPane root = new BorderPane();
-        root.setPrefSize(1080, 720);
+        root.setStyle("-fx-background-color: #f0f2f5;");
 
-        //region Background
-        String imagePath = "/com/example/florify/FeedPageBackground.png";
-        Image bg = new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm());
-        BackgroundSize backgroundSize = new BackgroundSize(100, 100, true, true, true, true);
-        BackgroundImage backgroundImage = new BackgroundImage(bg, BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
-        root.setBackground(new Background(backgroundImage));
-        //endregion
+        // Top Navigation
+        HBox topNav = createStyledTopBar();
+        root.setTop(topNav);
 
-        // region Home button
-        VBox homeButton = new VBox();
-        String imgPath = "/com/example/florify/home2.png";
-        Image img = new Image(Objects.requireNonNull(getClass().getResource(imgPath)).toExternalForm());
-        ImageView imageView = new ImageView(img);
-        imageView.setFitHeight(35);
-        imageView.setFitWidth(35);
-        Button home = new Button();
-        home.setGraphic(imageView);
+        // Feed Area with ScrollPane
+        ScrollPane scrollPane = createFeedArea();
+        root.setCenter(scrollPane);
 
-        ColorAdjust colorAdjust = new ColorAdjust();
-        colorAdjust.setBrightness(0.18);
-        DropShadow dropShadow = new DropShadow();
-        dropShadow.setRadius(1);
-
-        home.setOnMouseEntered(e -> {
-            home.setEffect(colorAdjust);
-            home.setEffect(dropShadow);
-        });
-        home.setOnMouseExited(e -> home.setEffect(null));
-
-        Label label = new Label("home");
-        label.setStyle("-fx-font-size: 12;-fx-font-weight: bold;-fx-font-family: Verdant;-fx-text-fill: black;");
-        homeButton.getChildren().addAll(home, label);
-        homeButton.setAlignment(Pos.CENTER);
-        home.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-
-        //endregion
-
-        // region Community button
-        VBox comm = new VBox();
-        comm.setAlignment(Pos.CENTER);
-        Button commButton = new Button();
-        String imgPath2 = "/com/example/florify/group.png";
-        Image commImg = new Image(Objects.requireNonNull(getClass().getResource(imgPath2)).toExternalForm());
-        ImageView imageView2 = new ImageView(commImg);
-        imageView2.setFitHeight(35);
-        imageView2.setFitWidth(35);
-        commButton.setGraphic(imageView2);
-        commButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-        commButton.setAlignment(Pos.CENTER);
-        commButton.setOnMouseEntered(e -> {
-            commButton.setEffect(colorAdjust);
-            commButton.setEffect(dropShadow);
-        });
-        commButton.setOnMouseExited(e -> commButton.setEffect(null));
-
-        Label commLabel = new Label("community");
-        commLabel.setStyle("-fx-font-size: 12;-fx-font-weight: bold;-fx-font-family: Verdant;-fx-text-fill: black;");
-        comm.getChildren().addAll(commButton, commLabel);
-        comm.setTranslateY(-1.5);
-
-        HBox buttons = new HBox();
-        buttons.setAlignment(Pos.CENTER);
-        buttons.setSpacing(100);
-        buttons.setPadding(new Insets(10));
-        buttons.setStyle("-fx-background-color: transparent;-fx-padding: 10;");
-        buttons.getChildren().addAll(homeButton, comm);
-
-        //endregion
-
-        // region Post button and post textfield
-        VBox v = new VBox();
-        v.setPrefWidth(900);
-        v.setPrefHeight(900);
-        v.setMaxWidth(900);
-        v.setMaxHeight(900);
-
-        HBox h = new HBox(1);
-        h.setPrefWidth(v.getPrefWidth());
-        h.setAlignment(Pos.CENTER);
-        Button postButton = new Button("Post");
-        v.setAlignment(Pos.CENTER);
-        TextField post = new TextField();
-        post.setPromptText("What’s on your mind?..");
-        post.setPrefHeight(200);
-        post.setPrefWidth(200);
-        post.setStyle("-fx-control-inner-background:#253528;-fx-border-color:#253528;-fx-background-radius: 8;"
-                + "-fx-border-radius: 8;-fx-prompt-text-fill: grey;-fx-focus-color: transparent;"
-                + "-fx-faint-focus-color: transparent;-fx-text-fill: grey;-fx-font-size: 18;-fx-font-family: Verdant;");
-
-        postButton.setStyle("-fx-background-color:#253528;-fx-border-color:#253528;-fx-background-radius: 8;"
-                + "-fx-border-radius: 8;-fx-prompt-text-fill: grey;-fx-focus-color: transparent;"
-                + "-fx-faint-focus-color: transparent;-fx-text-fill: grey;-fx-font-size: 18;-fx-font-family: Verdant;");
-
-        postButton.setOnMouseEntered(e -> postButton.setEffect(addGlowEffect()));
-        postButton.setOnMouseExited(e -> postButton.setEffect(null));
-        postButton.setOnMousePressed(e -> postButton.setEffect(addGlowEffect()));
-        postButton.setOnMouseReleased(e -> postButton.setEffect(null));
-
-        HBox.setHgrow(post, Priority.ALWAYS);
-        post.setAlignment(Pos.CENTER);
-        h.getChildren().addAll(post, postButton);
-
-        //endregion
-
-        // region Posts container
-        postsContainer = new VBox(10);
-        postsContainer.setPadding(new Insets(10));
-        postsContainer.setFillWidth(true);
-        postsContainer.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, null, null)));
-
-        ScrollPane scrollPane = new ScrollPane(postsContainer);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(800);
-        scrollPane.setPrefWidth(800);
-        scrollPane.setStyle("-fx-background-color: #8BA889;-fx-opacity: 0.3;");
-
-        v.getChildren().addAll(scrollPane, h);
-
-        root.setCenter(v);
-        root.setBottom(buttons);
-        //endregion
-
-        //region Scene
-        Scene scene = new Scene(root);
+        // Create Scene and show Stage
+        Scene scene = new Scene(root, 800, 900);
         stage.setScene(scene);
-        stage.setResizable(false);
+        stage.setTitle("Florify");
         stage.show();
-        //endregion
 
         // Initialize server connection
-        initializeConnection();
-
-        // Handle post button action
-        postButton.setOnAction(e -> sendPost(post));
+        try {
+            initializeConnection();
+        }
+        catch (Exception e) {
+            System.out.println("Not connected to server!");
+        }
     }
 
-    private void sendPost(TextField postField) {
-        String text = postField.getText().trim();
+    private HBox createStyledTopBar() {
+        HBox topBar = new HBox(10);
+        topBar.setPrefHeight(50);
+
+        // Start with little icon pic
+        String imgLink = "/com/example/florify/Petite_plante_sur_le_sol_dans_un_style_pixel_art___Vecteur_Premium-removebg-preview.png";
+        Image iconImage = new Image(Objects.requireNonNull(getClass().getResource(imgLink)).toExternalForm());
+        ImageView iconView = new ImageView(iconImage);
+
+        iconView.setFitHeight(48);
+        iconView.setFitWidth(48);
+
+        // Create the florify app typography
+        Label title = new Label("Florify");
+        title.setPadding(new Insets(8, 0, 0, 0));
+        title.setWrapText(true);
+        title.setStyle("-fx-font-size: 30px; " +
+                "-fx-font-family: Verdant; " +
+                "-fx-text-fill: linear-gradient(to right, #3C5148, #6B8E4E);" +
+                "-fx-font-weight: bold;"
+        );
+
+        // Animate gradient
+        Timeline colorAnim = new Timeline(new KeyFrame(Duration.millis(50), e -> {
+            double t = (System.currentTimeMillis() % 3000) / 3000.0;
+            LinearGradient gradient = new LinearGradient(
+                    t, 0, t + 1, 0,
+                    true, CycleMethod.REPEAT,
+                    new Stop(0, javafx.scene.paint.Color.web("#000000")),
+                    new Stop(0.5, javafx.scene.paint.Color.web("#A8E27B")),
+                    new Stop(1, javafx.scene.paint.Color.web("#000000"))
+            );
+            title.setTextFill(gradient);
+        }));
+
+        colorAnim.setCycleCount(Animation.INDEFINITE);
+        colorAnim.play();
+
+        // Buttons
+        HBox buttonsPane = new HBox(100);
+        Button homeButton = createNavButton("Home");
+        Button communityButton = createNavButton("Community");
+        Button logoutButton = createNavButton("Logout");
+        buttonsPane.getChildren().addAll(homeButton, communityButton, logoutButton);
+        buttonsPane.setAlignment(Pos.CENTER);
+
+        topBar.getChildren().addAll(iconView, title, buttonsPane);
+        HBox.setMargin(buttonsPane, new Insets(0, 0, 0, 100));
+
+        topBar.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.6);" +
+                        "-fx-background-radius: 3;"
+        );
+
+        return topBar;
+    }
+
+    private Button createNavButton(String text) {
+        Button btn = new Button(text);
+        btn.setStyle(
+                "-fx-font-family: 'Verdant';" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-background-color: transparent;" +
+                        "-fx-text-fill: #1A1A1A;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-alignment: CENTER;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-cursor: hand;"
+        );
+
+        btn.setPadding(new Insets(15, 10, 8, 10));
+
+        btn.setOnMouseEntered(e -> btn.setStyle(
+                "-fx-font-family: 'Verdant';" +
+                        "-fx-font-size: 20px;" +
+                        "-fx-background-color: transparent;" +
+                        "-fx-text-fill: black;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-alignment: CENTER;" +
+                        "-fx-border-color: transparent transparent #1B2727 transparent;" +
+                        "-fx-border-width: 0 0 2 0;" +
+                        "-fx-cursor: hand;"
+        ));
+
+        btn.setOnMouseExited(e -> btn.setStyle(
+                "-fx-font-family: 'Verdant';" +
+                        "-fx-font-size: 18px;" +
+                        "-fx-background-color: transparent;" +
+                        "-fx-text-fill: #1A1A1A;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-alignment: CENTER;" +
+                        "-fx-border-color: transparent;" +
+                        "-fx-cursor: hand;"
+        ));
+
+        return btn;
+    }
+
+    private ScrollPane createFeedArea() {
+        feedContainer = new VBox(15);
+        feedContainer.setPadding(new Insets(20));
+        feedContainer.setStyle("-fx-background-color: #f0f2f5;");
+
+        // Post Creation Card at the top
+        VBox postCreationCard = createPostCreationCard();
+        feedContainer.getChildren().add(postCreationCard);
+
+        ScrollPane scrollPane = new ScrollPane(feedContainer);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: #f0f2f5; -fx-background-color: #f0f2f5;");
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+        return scrollPane;
+    }
+
+    private VBox createPostCreationCard() {
+        VBox card = new VBox(12);
+        card.setPadding(new Insets(20));
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 8; " +
+                "-fx-border-color: #dcdcdc; -fx-border-radius: 8; -fx-border-width: 1;");
+        card.setMaxWidth(Double.MAX_VALUE);
+
+        postInput = new TextArea();
+        postInput.setPromptText("What's on your mind?");
+        postInput.setPrefRowCount(3);
+
+        postInput.setStyle("""
+    -fx-font-size: 17;
+    -fx-text-fill: black;
+    -fx-focus-color: #8BA889;
+    -fx-faint-focus-color: transparent;
+    -fx-font-family: Verdant;
+""");
+
+        // Post button
+        Button postBtn = new Button("Post");
+        postBtn.setStyle("""
+    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16;
+    -fx-font-family: Verdant;
+    -fx-cursor: hand;
+""");
+
+
+        postBtn.setPadding(new Insets(10, 30, 10, 30));
+
+        postBtn.setOnMouseEntered(e->{
+            postBtn.setEffect(addGlowEffect());
+
+        });
+
+        postBtn.setOnMouseExited(e->{
+            postBtn.setEffect(null);
+        });
+        // Connect to server logic
+        try {
+            postBtn.setOnAction(e -> sendPost());
+        }
+        catch (Exception e) {
+            System.out.println("Not connected to server!");
+        }
+
+        HBox buttonBox = new HBox();
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        buttonBox.getChildren().add(postBtn);
+
+        card.getChildren().addAll(postInput, buttonBox);
+
+        return card;
+    }
+
+    private void sendPost() {
+        String text = postInput.getText().trim();
         if (text.isEmpty()) return;
+
         try {
             Post newPost = new Post(Session.getUsername(), text);
             out.writeObject(newPost);
             out.flush();
-            postField.clear();
+
+            // Clear input correctly
+            postInput.clear();
+
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            System.out.println("Not connected to server!");
         }
     }
+
 
     private void initializeConnection() {
         try {
@@ -194,14 +263,14 @@ public class FeedPage extends Application {
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
-
+            // Listen for posts from server
             new Thread(() -> {
                 try {
                     while (true) {
                         Post post = (Post) in.readObject();
                         Platform.runLater(() -> {
                             PostCard card = new PostCard(post.getUsername(), post.getContent());
-                            postsContainer.getChildren().add(0, card);
+                            feedContainer.getChildren().add(1, card);
                         });
                     }
                 } catch (Exception e) {
@@ -209,16 +278,18 @@ public class FeedPage extends Application {
                 }
             }).start();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Not connected to server!");
         }
     }
-
     private DropShadow addGlowEffect() {
         DropShadow glow = new DropShadow();
         glow.setColor(Color.web("#6B8E4E"));
-        glow.setRadius(15);
+        glow.setRadius(3.5);
         glow.setSpread(0.15);
-        return glow;
+    return glow;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
-
