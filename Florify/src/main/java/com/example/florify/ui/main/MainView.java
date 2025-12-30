@@ -414,7 +414,27 @@ public class MainView extends Application {
             scanPlantBtn.setEffect(null);
         });
 
-        buttonBox.getChildren().addAll(addPlantButton, scanPlantBtn);
+        Button search = new Button("Search Plant");
+        search.setStyle("""
+    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 23;
+    -fx-font-family: Verdant;
+    -fx-cursor: hand;
+""");
+        search.setOnMouseEntered(e->{
+            search.setEffect(addGlowEffect());
+
+        });
+
+        search.setOnMouseExited(e->{
+            search.setEffect(null);
+        });
+
+        buttonBox.getChildren().addAll(search, addPlantButton, scanPlantBtn);
         return buttonBox;
     }
     private DropShadow addGlowEffect() {

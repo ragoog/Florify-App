@@ -3,6 +3,7 @@ package com.example.florify.ui.login;
 import com.example.florify.db.Database;
 import com.example.florify.db.UserDAO;
 import com.example.florify.ui.feed.FeedPage;
+import com.example.florify.ui.main.MainView;
 import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -99,16 +100,15 @@ public class LoginController
                     Session.setUsername(username);
 
                     //did this so i can test if feed page is working
-                    Platform.runLater(() -> {
-                        try {
-                            FeedPage feedPage = new FeedPage();
-                            feedPage.start(new Stage());
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    });
-
-                    loginView.getScene().getWindow().hide();
+//                    Platform.runLater(() -> {
+//                        try {
+//                            FeedPage feedPage = new FeedPage();
+//                            feedPage.start(new Stage());
+//                        } catch (Exception ex) {
+//                            ex.printStackTrace();
+//                        }
+//                   );
+//                    loginView.getScene().getWindow().hide();
                 }
 
                 else
