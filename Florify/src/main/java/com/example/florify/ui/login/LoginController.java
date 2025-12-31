@@ -1,5 +1,6 @@
 package com.example.florify.ui.login;
 
+import com.example.florify.common.User;
 import com.example.florify.db.Database;
 import com.example.florify.db.UserDAO;
 import com.example.florify.ui.feed.FeedPage;
@@ -15,18 +16,18 @@ import com.example.florify.Server.ServerLauncher;
 import com.example.florify.common.Session;
 import javafx.stage.Stage;
 
-public class LoginController
-{
+import java.security.PublicKey;
+
+public class LoginController {
     private final LoginView loginView;
 
-    public LoginController(LoginView loginView)
-    {
+    public static User user;
+    public LoginController(LoginView loginView) {
         this.loginView = loginView;
         setupActions();
     }
 
-    private void setupActions()
-    {
+    private void setupActions() {
         // first initialize the database if it is not already initialized
         // UserDAO.dropUsersTable();
         Database.init();
@@ -42,16 +43,12 @@ public class LoginController
         PasswordField confirmPasswordField = loginView.getConfirmPasswordField();
 
         // event for switching login/signup
-        registerButton.setOnAction(e ->
-        {
+        registerButton.setOnAction(e -> {
             System.out.println("Register button pressed");
-            if (loginView.getCurrentButtonState() == LoginView.ButtonState.REGISTER)
-            {
+            if (loginView.getCurrentButtonState() == LoginView.ButtonState.REGISTER) {
                 loginView.slideToLoginAnimation(700, contentPane, registerButton, titleLabel,
                         subtitleLabel, usernameField, confirmPasswordField, loginButton);
-            }
-            else
-            {
+            } else {
                 loginView.slideToRegisterAnimation(700, contentPane, registerButton, titleLabel,
                         subtitleLabel, usernameField, loginButton);
             }
@@ -60,76 +57,62 @@ public class LoginController
         // TODO: CONFIRM PASSWORD MUST BE SAME AS PASSWORD
         // TODO: PASSWORD AND CONFIRM PASSWORD HASHING
         // TODO: UI OR SOME LIL LABEL AS AN INDICATOR OF LOGIN/REGISTER STATUS
-        loginButton.setOnAction(e ->
-        {
+        loginButton.setOnAction(e -> {
             String password = passwordField.getText();
 
-            if(loginView.getCurrentButtonState() == LoginView.ButtonState.LOGIN)
-            {
+            if (loginView.getCurrentButtonState() == LoginView.ButtonState.LOGIN) {
                 String email = usernameField.getText().toLowerCase();
                 String confirmPassword = confirmPasswordField.getText();
-                if(validEmail(email) && matchingPassword(password, confirmPassword))
-                {
+                if (validEmail(email) && matchingPassword(password, confirmPassword)) {
                     String username = email.substring(0, email.indexOf("@"));
                     boolean registered = UserDAO.registerUser(username, email, password);
 
-                    if(registered)
-                    {
+                    if (registered) {
                         System.out.println("register successful");
                         loginView.slideToRegisterAnimation(700, contentPane, registerButton, titleLabel,
                                 subtitleLabel, usernameField, loginButton);
-                    }
-                    else
-                    {
+                    } else {
                         System.out.println("register failed");
                     }
-                }
-                else
-                {
+                } else {
                     System.out.println("Password doesnt match");
                 }
-            }
-            else
-            {
+            } else {
                 String username = usernameField.getText();
                 boolean loggedIn = UserDAO.loginUser(username, password);
 
-                if(loggedIn)
-                {
+                if (loggedIn) {
                     System.out.println("Login successful");
                     new Thread(() -> ServerLauncher.startFeedServer()).start();
-                    Session.setUsername(username);
+                    Session.setUsername(username); // Tag: LoginController - Usage: Setting the global session username
+                                                   // upon successful login
+
+                    // create an object of the user
+                    user = new User(username, password);
 
                     Scene scene = SceneManager.loadMainScene();
                     SceneManager.switchScene(scene);
                 }
 
-                else
-                {
+                else {
                     System.out.println("Login failed");
                 }
             }
-        }
-        );
+        });
     }
 
-    private boolean validEmail(String email)
-    {
-        if(email.isBlank())
-        {
+    private boolean validEmail(String email) {
+        if (email.isBlank()) {
             System.out.println("Email is blank invalid input");
             return false;
         }
 
         boolean valid = false;
-        String[] validDomains = {"@gmail.com", "@yahoo.com", "@outlook.com", "@hotmail.com"};
-
+        String[] validDomains = { "@gmail.com", "@yahoo.com", "@outlook.com", "@hotmail.com" };
 
         // check if the email contains any of the validDomains
-        for(String domain : validDomains)
-        {
-            if(email.endsWith(domain))
-            {
+        for (String domain : validDomains) {
+            if (email.endsWith(domain)) {
                 valid = true;
                 break;
             }
@@ -139,8 +122,7 @@ public class LoginController
         return valid;
     }
 
-    private boolean matchingPassword(String password, String confirmPassword)
-    {
+    private boolean matchingPassword(String password, String confirmPassword) {
         return password.equals(confirmPassword);
     }
 }

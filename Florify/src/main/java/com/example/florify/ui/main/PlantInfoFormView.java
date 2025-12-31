@@ -1,6 +1,9 @@
 package com.example.florify.ui.main;
 
+import com.example.florify.common.Plant;
+import com.example.florify.common.User;
 import com.example.florify.machineLearningModels.PMMLLoader;
+import com.example.florify.ui.login.LoginController;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -397,6 +400,28 @@ public class PlantInfoFormView extends Application {
                 Double daysSinceWatering = Double.parseDouble(careField.getText());
 
 
+                Plant newPlant = new Plant(nameField.getText(), soilMoisture, temperature, humidity, lightHours, daysSinceWatering);
+
+                try
+                {
+                    LoginController.user.addPlant(newPlant);
+                }
+                catch (NullPointerException ex)
+                {
+                    System.out.println("Null user pls run the app properly");
+                }
+
+// Update the user info section
+                Label plantLabel = new Label(
+                        newPlant.name + " | Moisture: " + newPlant.soilMoisture +
+                                ", Temp: " + newPlant.temperature +
+                                ", Humidity: " + newPlant.humidity +
+                                ", Light: " + newPlant.lightHours +
+                                ", Days Since Watering: " + newPlant.daysSinceWatering
+                );
+                plantLabel.setStyle("-fx-font-family: 'Verdana'; -fx-font-size: 14px; -fx-text-fill: #253528;");
+
+
                 // HERE THE MACHINE LEARNING PART CALLING RANDOM FOREST MODEL
                 //region SINGLETON PATTERN USAGE
                 // Load the model (USING SINGLETON PATTERN) (GET THE INSTANCE)
@@ -454,7 +479,58 @@ public class PlantInfoFormView extends Application {
 
         root.setCenter(formContainer);
 
-        Scene scene = new Scene(root, 950, 700);
+        VBox userInfoSection = new VBox(10);
+        userInfoSection.setPadding(new Insets(20));
+        userInfoSection.setStyle("-fx-background-color: #E8F5E9; -fx-background-radius: 10;");
+        Label userPlantsTitle = new Label("Your Plants:");
+        userPlantsTitle.setStyle("-fx-font-family: 'Verdant'; -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #253528;");
+
+        userInfoSection.getChildren().add(userPlantsTitle);
+
+        // Add it below the Save button later
+        formContainer.getChildren().add(userInfoSection);
+
+        HBox bottomBar = new HBox(10);
+        bottomBar.setAlignment(Pos.CENTER_LEFT);
+        bottomBar.setPadding(new Insets(15));
+        bottomBar.setStyle("-fx-background-color: #DFF0D8; -fx-background-radius: 10;");
+
+        Label bottomLabel = new Label("Manage Plants:");
+        bottomLabel.setStyle("-fx-font-family: 'Verdana'; -fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #253528;");
+
+        Button showPlantsBtn = new Button("Show/Update Plants");
+        showPlantsBtn.setStyle("""
+        -fx-background-color: #6B8E4E;
+        -fx-text-fill: white;
+        -fx-font-weight: bold;
+        -fx-background-radius: 8;
+        -fx-cursor: hand;
+""");
+
+// When clicked, clear existing plant labels and add all plants from the current user
+        showPlantsBtn.setOnAction(e -> {
+            // Keep the title at the top
+            userInfoSection.getChildren().clear();
+            userInfoSection.getChildren().add(userPlantsTitle);
+
+            for (Plant plant : LoginController.user.getPlants()) {
+                Label plantLabel = new Label(
+                        plant.name + " | Moisture: " + plant.soilMoisture +
+                                ", Temp: " + plant.temperature +
+                                ", Humidity: " + plant.humidity +
+                                ", Light: " + plant.lightHours +
+                                ", Days Since Watering: " + plant.daysSinceWatering
+                );
+                plantLabel.setStyle("-fx-font-family: 'Verdana'; -fx-font-size: 14px; -fx-text-fill: #253528;");
+                userInfoSection.getChildren().add(plantLabel);
+            }
+        });
+
+        bottomBar.getChildren().addAll(bottomLabel, showPlantsBtn);
+        formContainer.getChildren().add(bottomBar);
+
+
+        Scene scene = new Scene(root, 950, 800);
         primaryStage.setTitle("Add New Plant");
         primaryStage.setScene(scene);
         primaryStage.show();

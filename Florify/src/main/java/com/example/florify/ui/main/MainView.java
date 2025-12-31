@@ -1,6 +1,8 @@
 package com.example.florify.ui.main;
 
+import com.example.florify.ui.login.LoginController;
 import com.example.florify.ui.login.LoginView;
+import com.example.florify.common.*;
 import com.example.florify.ui.navigation.SceneManager;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -37,36 +39,62 @@ import java.util.Objects;
 
 public class MainView extends Application {
 
-    public static void main(String[] args) { launch(args); }
-
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
-    public void start(Stage primaryStage){
+    public void start(Stage primaryStage) {
 
-            HBox upperBox = createStyledTopBar();
-            VBox tipPane = createStyledTipBar();
+        HBox upperBox = createStyledTopBar();
+        VBox tipPane = createStyledTipBar();
 
-            HBox cardContainer = new HBox(20);
+        HBox cardContainer = new HBox(20);
         cardContainer.setStyle("-fx-background-color: transparent;");
 
         cardContainer.setPadding(new Insets(20, 20, 20, 20));
-            cardContainer.setAlignment(Pos.CENTER);
-            cardContainer.getChildren().add(createPlantCard("Tomato", "/com/example/florify/tomato.png"));
-            cardContainer.getChildren().add(createPlantCard("Potato", "/com/example/florify/potato.png"));
-            cardContainer.getChildren().add(createPlantCard("Mint", "/com/example/florify/mint.png"));
-            cardContainer.getChildren().add(createPlantCard("Lettuce", "/com/example/florify/lettuce.png"));
-            cardContainer.getChildren().add(createPlantCard("Aloe", "/com/example/florify/aloe.png"));
-            cardContainer.getChildren().add(createPlantCard("Spinach", "/com/example/florify/spinach.png"));
-            cardContainer.getChildren().add(createPlantCard("Basil", "/com/example/florify/basil.png"));
+        cardContainer.setAlignment(Pos.CENTER);
 
-            ScrollPane scrollPane = new ScrollPane(cardContainer);
+        // Tag: MainView - Usage: Creating User instance to simulate a session user
+        System.out.println("Current user: " + LoginController.user);
+
+        // Tag: MainView - Usage: Instantiating Tomato class for the plant card;
+        // demonstrates polymorphism if assigned to Plant type
+        Tomato tomato = new Tomato("Tomato");
+        cardContainer.getChildren().add(createPlantCard(tomato.name, "/com/example/florify/tomato.png"));
+
+        // Tag: MainView - Usage: Instantiating Potato class for the plant card
+        Potato potato = new Potato("Potato");
+        cardContainer.getChildren().add(createPlantCard(potato.name, "/com/example/florify/potato.png"));
+
+        // Tag: MainView - Usage: Instantiating Mint class for the plant card
+        Mint mint = new Mint("Mint");
+        cardContainer.getChildren().add(createPlantCard(mint.name, "/com/example/florify/mint.png"));
+
+        // Tag: MainView - Usage: Instantiating Lettuce class for the plant card
+        Lettuce lettuce = new Lettuce("Lettuce");
+        cardContainer.getChildren().add(createPlantCard(lettuce.name, "/com/example/florify/lettuce.png"));
+
+        // Tag: MainView - Usage: Instantiating Aloe class for the plant card
+        Aloe aloe = new Aloe("Aloe");
+        cardContainer.getChildren().add(createPlantCard(aloe.name, "/com/example/florify/aloe.png"));
+
+        // Tag: MainView - Usage: Instantiating Spinach class for the plant card
+        Spinach spinach = new Spinach("Spinach");
+        cardContainer.getChildren().add(createPlantCard(spinach.name, "/com/example/florify/spinach.png"));
+
+        // Tag: MainView - Usage: Instantiating Basil class for the plant card
+        Basil basil = new Basil("Basil");
+        cardContainer.getChildren().add(createPlantCard(basil.name, "/com/example/florify/basil.png"));
+
+        ScrollPane scrollPane = new ScrollPane(cardContainer);
         VBox.setMargin(scrollPane, new Insets(70, 0, 30, 0));
 
         scrollPane.setStyle("""
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-    -fx-padding: 0;
-""");
+                    -fx-background-color: transparent;
+                    -fx-background-insets: 0;
+                    -fx-padding: 0;
+                """);
         Platform.runLater(() -> {
             Node vp = scrollPane.lookup(".viewport");
             if (vp != null) {
@@ -75,22 +103,22 @@ public class MainView extends Application {
         });
 
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            scrollPane.setPannable(true);
-            scrollPane.setPadding(new Insets(20, 20, 5, 20));
-            scrollPane.setFitToHeight(true);
-            scrollPane.setOnScrollFinished(e -> snapToClosestCard(scrollPane, cardContainer));
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setPannable(true);
+        scrollPane.setPadding(new Insets(20, 20, 5, 20));
+        scrollPane.setFitToHeight(true);
+        scrollPane.setOnScrollFinished(e -> snapToClosestCard(scrollPane, cardContainer));
 
-            // Action buttons
-            HBox actionButtons = createActionButtons();
+        // Action buttons
+        HBox actionButtons = createActionButtons();
 
-            VBox primary = createStyledPrimary();
-            primary.getChildren().addAll(upperBox, tipPane,scrollPane, actionButtons);
+        VBox primary = createStyledPrimary();
+        primary.getChildren().addAll(upperBox, tipPane, scrollPane, actionButtons);
 
-            Scene scene = new Scene(primary, 1080, 720);
-            primaryStage.setScene(scene);
-            primaryStage.show();
-        }
+        Scene scene = new Scene(primary, 1080, 720);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
 
     private void snapToClosestCard(ScrollPane scrollPane, HBox container) {
         double scrollX = scrollPane.getHvalue() * (container.getWidth() - scrollPane.getWidth());
@@ -98,7 +126,8 @@ public class MainView extends Application {
         double minDist = Double.MAX_VALUE;
 
         for (int i = 0; i < container.getChildren().size(); i++) {
-            double cardCenter = container.getChildren().get(i).getLayoutX() + container.getChildren().get(i).getBoundsInParent().getWidth() / 2.0;
+            double cardCenter = container.getChildren().get(i).getLayoutX()
+                    + container.getChildren().get(i).getBoundsInParent().getWidth() / 2.0;
             double dist = Math.abs(cardCenter - scrollX - scrollPane.getWidth() / 2.0);
             if (dist < minDist) {
                 minDist = dist;
@@ -116,8 +145,7 @@ public class MainView extends Application {
         scrollPane.setHvalue(targetHValue);
     }
 
-    private VBox createPlantCard(String plantName, String imagePath)
-    {
+    private VBox createPlantCard(String plantName, String imagePath) {
         VBox card = new VBox(10);
         card.setAlignment(Pos.CENTER);
         card.setPadding(new Insets(10));
@@ -125,7 +153,8 @@ public class MainView extends Application {
         card.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
 
         // plant image
-        Image img = new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm(), 180, 180, true, true);
+        Image img = new Image(Objects.requireNonNull(getClass().getResource(imagePath)).toExternalForm(), 180, 180,
+                true, true);
         ImageView imgView = new ImageView(img);
         imgView.setFitWidth(180);
         imgView.setFitHeight(180);
@@ -145,9 +174,8 @@ public class MainView extends Application {
         return card;
     }
 
-    private VBox createStyledTipBar()
-    {
-        //region List of tips
+    private VBox createStyledTipBar() {
+        // region List of tips
         List<String> tips = List.of(
                 "Water your plants early in the morning.",
                 "Rotate your plants weekly for even growth.",
@@ -168,16 +196,16 @@ public class MainView extends Application {
                 "Introduce beneficial insects for natural pest control.",
                 "Use a spray bottle for misting humidity-loving plants.",
                 "Remove flowers after blooming to encourage new growth.",
-                "Keep an eye on seasonal changes and adjust watering accordingly."
-        );
-        //endregion
+                "Keep an eye on seasonal changes and adjust watering accordingly.");
+        // endregion
 
         // get tip of the day
-        LocalDate today =  LocalDate.now();
-        int tipIndex = today.getDayOfYear() % tips.size();  // to ensure it is within bounds
+        LocalDate today = LocalDate.now();
+        int tipIndex = today.getDayOfYear() % tips.size(); // to ensure it is within bounds
         String tipOfTheDay = tips.get(tipIndex);
 
-        // tab pane consists of tip title label (what this is about) and label of the tip itself
+        // tab pane consists of tip title label (what this is about) and label of the
+        // tip itself
         VBox tabPane = new VBox(8);
         tabPane.setPadding(new Insets(20, 30, 20, 30));
         tabPane.setStyle("-fx-background-color: #F5F9F4; " +
@@ -198,7 +226,7 @@ public class MainView extends Application {
 
     private static Label getLabel(String tipOfTheDay) {
         Label tipLabel = new Label(tipOfTheDay);
-        tipLabel.setEffect(new DropShadow(5, Color.rgb(0,0,0,0.5)));
+        tipLabel.setEffect(new DropShadow(5, Color.rgb(0, 0, 0, 0.5)));
         tipLabel.setStyle(
                 "-fx-font-family: Verdant;" +
                         "-fx-font-size: 15px;" +
@@ -206,8 +234,7 @@ public class MainView extends Application {
                         "-fx-text-fill: linear-gradient(to bottom, #3C5148, #6B8E4E);" +
                         "-fx-fill: #3C5148;" +
                         "-fx-stroke: #1B2727;" +
-                        "-fx-stroke-width: 0.5;"
-        );
+                        "-fx-stroke-width: 0.5;");
 
         String fullText = tipLabel.getText();
         tipLabel.setText("");
@@ -215,22 +242,25 @@ public class MainView extends Application {
         Timeline timeline = new Timeline();
         timeline.setCycleCount(Timeline.INDEFINITE);
 
-        final int[] idx = {0};           // current character index
-        final int[] dir = {1};           // 1 = forward, -1 = backward
-        final int[] pauseCounter = {0};
-        int pauseDuration = 40;   // number of frames to wait at full/empty 50ms * 40 = 2 seconds
+        final int[] idx = { 0 }; // current character index
+        final int[] dir = { 1 }; // 1 = forward, -1 = backward
+        final int[] pauseCounter = { 0 };
+        int pauseDuration = 40; // number of frames to wait at full/empty 50ms * 40 = 2 seconds
 
         KeyFrame kf = new KeyFrame(Duration.millis(50), e -> {
             // eli gowa el lamda expression must be 1) final 2) array
 
             // if it is below 0 keep it at 0 AKA CLAMPING
-            if(idx[0] < 0) idx[0] = 0;
-            if(dir[0] > fullText.length()) idx[0] = fullText.length();
+            if (idx[0] < 0)
+                idx[0] = 0;
+            if (dir[0] > fullText.length())
+                idx[0] = fullText.length();
 
             // If we are at the end or start, increment pause counter
             if ((idx[0] == fullText.length() && dir[0] == 1) || (idx[0] == 0 && dir[0] == -1)) {
                 // delete the first letter too
-                if(idx[0] == 0) tipLabel.setText("");
+                if (idx[0] == 0)
+                    tipLabel.setText("");
 
                 if (pauseCounter[0] < pauseDuration) {
                     pauseCounter[0]++;
@@ -251,8 +281,8 @@ public class MainView extends Application {
         tipLabel.setWrapText(true); // so the tip wraps if too long
         return tipLabel;
     }
-    private HBox createStyledTopBar()
-    {
+
+    private HBox createStyledTopBar() {
         HBox topBar = new HBox(10);
         topBar.setPrefHeight(50);
 
@@ -271,8 +301,7 @@ public class MainView extends Application {
         title.setStyle("-fx-font-size: 30px; " +
                 "-fx-font-family: Verdant; " +
                 "-fx-text-fill: linear-gradient(to right, #3C5148, #6B8E4E);" +
-                "-fx-font-weight: bold;"
-        );
+                "-fx-font-weight: bold;");
 
         // Animate gradient
         Timeline colorAnim = new Timeline(new KeyFrame(Duration.millis(50), e -> {
@@ -282,16 +311,15 @@ public class MainView extends Application {
                     true, CycleMethod.REPEAT,
                     new Stop(0, javafx.scene.paint.Color.web("#000000")),
                     new Stop(0.5, javafx.scene.paint.Color.web("#A8E27B")),
-                    new Stop(1, javafx.scene.paint.Color.web("#000000"))
-            );
+                    new Stop(1, javafx.scene.paint.Color.web("#000000")));
             title.setTextFill(gradient);
         }));
 
         colorAnim.setCycleCount(Animation.INDEFINITE);
         colorAnim.play();
 
-        //region buttons button
-        HBox buttonsPane  = new HBox(100);
+        // region buttons button
+        HBox buttonsPane = new HBox(100);
         Button homeButton = createNavButton("Home");
 
         Button communityButton = createNavButton("Community");
@@ -314,11 +342,11 @@ public class MainView extends Application {
 
         topBar.setStyle(
                 "-fx-background-color: rgba(255, 255, 255, 0.6);" + // semi-transparent
-                        "-fx-background-radius: 3;"
-        );
+                        "-fx-background-radius: 3;");
 
         return topBar;
     }
+
     private Button createNavButton(String text) {
         Button btn = new Button(text);
         // base style (THIS is the important one)
@@ -330,11 +358,9 @@ public class MainView extends Application {
                         "-fx-font-weight: bold;" +
                         "-fx-text-alignment: CENTER;" +
                         "-fx-border-color: transparent;" +
-                        "-fx-cursor: hand;"
-        );
+                        "-fx-cursor: hand;");
 
         btn.setPadding(new Insets(15, 10, 8, 10));
-
 
         btn.setOnMouseEntered(e -> btn.setStyle(
                 "-fx-font-family: 'Verdant';" +
@@ -345,8 +371,7 @@ public class MainView extends Application {
                         "-fx-text-alignment: CENTER;" +
                         "-fx-border-color: transparent transparent #1B2727 transparent;" +
                         "-fx-border-width: 0 0 2 0;" +
-                        "-fx-cursor: hand;"
-        ));
+                        "-fx-cursor: hand;"));
 
         btn.setOnMouseExited(e -> btn.setStyle(
                 "-fx-font-family: 'Verdant';" +
@@ -356,30 +381,30 @@ public class MainView extends Application {
                         "-fx-font-weight: bold;" +
                         "-fx-text-alignment: CENTER;" +
                         "-fx-border-color: transparent;" +
-                        "-fx-cursor: hand;"
-        ));
+                        "-fx-cursor: hand;"));
 
         return btn;
     }
-    private VBox createStyledPrimary()
-    {
-        VBox primary  = new VBox(10);
+
+    private VBox createStyledPrimary() {
+        VBox primary = new VBox(10);
 
         String imgLink = "/com/example/florify/Hailuo_Image_Aesthetic high quality botanic_460955248711925761.jpg";
         Image bgImage = new Image(Objects.requireNonNull(getClass().getResource(imgLink)).toExternalForm());
 
-        BackgroundSize backgroundSize = new BackgroundSize(BackgroundSize.AUTO,BackgroundSize.AUTO,true,true,true,true);
+        BackgroundSize backgroundSize = new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, true, true, true,
+                true);
         BackgroundImage backgroundImage = new BackgroundImage(
                 bgImage,
                 BackgroundRepeat.NO_REPEAT,
                 BackgroundRepeat.NO_REPEAT,
                 BackgroundPosition.CENTER,
-                backgroundSize
-        );
+                backgroundSize);
 
         primary.setBackground(new Background(backgroundImage));
         return primary;
     }
+
     private HBox createActionButtons() {
         HBox buttonBox = new HBox(30);
         buttonBox.setAlignment(Pos.CENTER);
@@ -388,21 +413,21 @@ public class MainView extends Application {
         // Add Plant Button
         Button addPlantButton = new Button("Add a new plant");
         addPlantButton.setStyle("""
-    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 23;
-    -fx-font-family: Verdant;
-    -fx-cursor: hand;
-""");
-        addPlantButton.setOnMouseEntered(e->{
+                    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
+                    -fx-background-radius: 12;
+                    -fx-border-radius: 12;
+                    -fx-text-fill: white;
+                    -fx-font-weight: bold;
+                    -fx-font-size: 23;
+                    -fx-font-family: Verdant;
+                    -fx-cursor: hand;
+                """);
+        addPlantButton.setOnMouseEntered(e -> {
             addPlantButton.setEffect(addGlowEffect());
 
         });
 
-        addPlantButton.setOnMouseExited(e->{
+        addPlantButton.setOnMouseExited(e -> {
             addPlantButton.setEffect(null);
         });
 
@@ -413,15 +438,15 @@ public class MainView extends Application {
         // Scan Plant Button
         Button scanPlantBtn = new Button("Scan a Plant");
         scanPlantBtn.setStyle("""
-    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 24;
-    -fx-font-family: Verdant;
-    -fx-cursor: hand;
-""");
+                    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
+                    -fx-background-radius: 12;
+                    -fx-border-radius: 12;
+                    -fx-text-fill: white;
+                    -fx-font-weight: bold;
+                    -fx-font-size: 24;
+                    -fx-font-family: Verdant;
+                    -fx-cursor: hand;
+                """);
 
         scanPlantBtn.setOnMouseEntered(e -> {
             scanPlantBtn.setEffect(addGlowEffect());
@@ -437,20 +462,20 @@ public class MainView extends Application {
 
         Button search = new Button("Search Plant");
         search.setStyle("""
-    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 23;
-    -fx-font-family: Verdant;
-    -fx-cursor: hand;
-""");
-        search.setOnMouseEntered(e->{
+                    -fx-background-color: linear-gradient(to right, #6B8E4E, #A0C48C);
+                    -fx-background-radius: 12;
+                    -fx-border-radius: 12;
+                    -fx-text-fill: white;
+                    -fx-font-weight: bold;
+                    -fx-font-size: 23;
+                    -fx-font-family: Verdant;
+                    -fx-cursor: hand;
+                """);
+        search.setOnMouseEntered(e -> {
             search.setEffect(addGlowEffect());
         });
 
-        search.setOnMouseExited(e->{
+        search.setOnMouseExited(e -> {
             search.setEffect(null);
         });
 
@@ -461,6 +486,7 @@ public class MainView extends Application {
         buttonBox.getChildren().addAll(search, addPlantButton, scanPlantBtn);
         return buttonBox;
     }
+
     private DropShadow addGlowEffect() {
         DropShadow glow = new DropShadow();
         glow.setColor(Color.web("#6B8E4E"));
@@ -469,4 +495,3 @@ public class MainView extends Application {
         return glow;
     }
 }
-
